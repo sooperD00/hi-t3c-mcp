@@ -24,7 +24,7 @@ async def listen_sensor() -> None:
 # port 8000 in and out
 async def get_and_send_http() -> float:
 	""" Listen to port 8000 for http requests """
-	...
+	raise NotImplementedError
 
 
 if __name__ == "__main__":

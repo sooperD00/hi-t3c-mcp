@@ -180,16 +180,52 @@ git commit -m "test(GREEN): listen_sensor() writes a float" -m "listen_sensor() 
 - [x] pytest -k http  # k=keywork=match any test with this text in the name
 
 ```python
- async def check():  # a loop
-        task = asyncio.create_task(service.listen_sensor())
-        await asyncio.sleep(0.1) # "soon" after it starts
->       assert isinstance(service.latest_temp, float)
-E    assert False
-E     +  where False = isinstance(None, float)
-E     +    where None = service.latest_temp
+=============================== FAILURES ======================
+___________ test_get_and_send_http_returns_value_in_latest_temp[18.3] __________
 
-test_service.py:28: AssertionError
-=========================================================== short test summary info ===========================================================
-FAILED test_service.py::test_listen_sensor_writes_a_float_to_latest_temp - assert False
-========================================================= 1 failed, 1 passed in 0.42s ======
+test_temp = 18.3
+
+    @pytest.mark.parametrize("test_temp", [18.3, None])
+    def test_get_and_send_http_returns_value_in_latest_temp(test_temp):
+        """ it returns whatever latest_temp holds. """
+
+        # set it up
+        service.latest_temp = test_temp  # 18.3, None
+
+        # call it
+        result = asyncio.run(service.get_and_send_http())
+
+        # check it
+>       assert result == test_temp  # = assigns, == compares
+     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+E    assert None == 18.3
+
+test_service.py:43: AssertionError
+===================== short test summary info ====================
+FAILED test_service.py::test_get_and_send_http_returns_value_in_latest_temp[18.3] - assert None == 18.3
+================= 1 failed, 1 passed, 2 deselected in 0.24s =======
 ```
+
+- [ ] git commit -m "test(RED): "???"
+
+> Make the stub able to fail. This is the standard trick. A stub that raises can’t accidentally match anything, so every case goes honestly red:
+
+- [x] in get_and_send_http, replace ... with: raise NotImplementedError   # service.py
+- [x] pytest -k http                                                      # expect 2 failed
+
+I’d go with B. Then when you write return latest_temp, both cases go from red to green, and you can trust both of them.
+
+```python
+    async def get_and_send_http() -> float:
+        """ Listen to port 8000 for http requests """
+>       raise NotImplementedError
+E    NotImplementedError
+
+service.py:27: NotImplementedError
+========== short test summary info =====================
+FAILED test_service.py::test_get_and_send_http_returns_value_in_latest_temp[18.3] - NotImplementedError
+FAILED test_service.py::test_get_and_send_http_returns_value_in_latest_temp[None] - NotImplementedError
+========== 2 failed, 2 deselected in 0.39s =============
+```
+
+- [x] git commit -m "test(RED): get_and_send_http() returns latest_temp" -m "stub raises NotImplementedError so both cases fail"
