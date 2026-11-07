@@ -162,7 +162,7 @@ FAILED test_service.py::test_listen_sensor_writes_a_float_to_latest_temp - asser
 
 ```bash
 git add -A
-commit -m "test(RED): listen_sensor() writes a float"
+git commit -m "test(RED): listen_sensor() writes a float"
 ```
 
 - [x] comment back in
@@ -171,5 +171,25 @@ commit -m "test(RED): listen_sensor() writes a float"
 
 ```bash
 git add -A
-commit -m "test(GREEN): listen_sensor() writes a float" -m "listen_sensor() declares global latest_temp inside the function to grab the module-level var properly from the outside"
+git commit -m "test(GREEN): listen_sensor() writes a float" -m "listen_sensor() declares global latest_temp inside the function to grab the module-level var properly from the outside"
+```
+
+---
+
+- [-] pytest test_service.py::test_get_and_send_http_returns_value_in_latest_temp
+- [x] pytest -k http  # k=keywork=match any test with this text in the name
+
+```python
+ async def check():  # a loop
+        task = asyncio.create_task(service.listen_sensor())
+        await asyncio.sleep(0.1) # "soon" after it starts
+>       assert isinstance(service.latest_temp, float)
+E    assert False
+E     +  where False = isinstance(None, float)
+E     +    where None = service.latest_temp
+
+test_service.py:28: AssertionError
+=========================================================== short test summary info ===========================================================
+FAILED test_service.py::test_listen_sensor_writes_a_float_to_latest_temp - assert False
+========================================================= 1 failed, 1 passed in 0.42s ======
 ```

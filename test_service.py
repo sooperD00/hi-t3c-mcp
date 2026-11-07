@@ -22,10 +22,9 @@ def test_listen_sensor_writes_a_float_to_latest_temp():
 	if lots of tests need async, use pytest-asyncio plugin rather than a helper
 	"""
 
-	async def check():  # a loop
+	async def check():  # the coroutine asyncio.run puts on the loop
 		task = asyncio.create_task(service.listen_sensor())
 		await asyncio.sleep(0.1) # "soon" after it starts
 		assert isinstance(service.latest_temp, float)
 		task.cancel()
 	asyncio.run(check())  # run the loop
-
