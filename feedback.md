@@ -237,4 +237,45 @@ FAILED test_service.py::test_get_and_send_http_returns_value_in_latest_temp[None
 ====== 2 passed, 2 deselected in 0.11s ============
 ```
 
-- [ ] git commit -m "test(GREEN): get_send_http() returns latest_temp"
+- [x] git commit -m "test(GREEN): get_send_http() returns latest_temp"
+
+---
+
+Refactor
+
+This function just hands back a number -> 
+- [x] function name -> answer_temperature()
+Docstring should say what it actually does
+- [x] docstring -> """Answer one GET /temperature with the latest reading"""
+Test names change with a function name change
+- [x] test_get_and_send_http_returns_value_in_latest_temp -> test_answer_temperature_returns_value_in_latest_temp
+
+- [-] git commit -m "test(refactor): get_and_send_http() -> answer_temperature()" \
+-m "The function doesn’t get or send any HTTP. Uvicorn does that part." \
+-m "get_and_send_http() -> answer_temperature()" \
+-m "docstring -> 'Answer one GET /temperature with the latest reading'" \
+-m "test_get_and_send_http_returns_value_in_latest_temp -> test_answer_temperature_returns_value_in_latest_temp"
+
+---
+
+- [x] draft
+so actually, you refactored get_and_send_http() -> 3 functions
+
+f1:
+f2:
+f3:
+
+plan: write your own http first, then refactor to FastAPI later
+
+- [ ] final
+git commit -m "refactor: get_and_send_http() -> 3 functions" \
+  -m "f1: answer_temperature() returns latest_temp (the old get_and_send_http body)" \
+  -m "f2: get_and_send_http(reader, writer) reads the GET, writes the HTTP reply (stub)" \
+  -m "f3: main() starts the sensor loop + server on 8000 (stub)" \
+  -m "plan: write own http first, then refactor to FastAPI later"
+
+
+---
+- [ ] git mv feedback.md devlog.md
+
+

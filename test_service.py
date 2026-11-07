@@ -30,14 +30,14 @@ def test_listen_sensor_writes_a_float_to_latest_temp():
 	asyncio.run(check())  # run the loop
 
 @pytest.mark.parametrize("test_temp", [18.3, None])
-def test_get_and_send_http_returns_value_in_latest_temp(test_temp):
+def test_answer_temperature_returns_value_in_latest_temp(test_temp):
 	""" it returns whatever latest_temp holds. """
 	
 	# set it up
 	service.latest_temp = test_temp  # 18.3, None
 
 	# call it
-	result = asyncio.run(service.get_and_send_http())
+	result = asyncio.run(service.answer_temperature())
 
 	# check it
 	assert result == test_temp  # = assigns, == compares

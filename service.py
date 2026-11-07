@@ -2,35 +2,41 @@
 
 import asyncio
 
-""" module-level vars so latest T is waiting in RAM """
+""" module-level var so latest T is waiting in RAM 
+
+	- the functions never call each other -> can't pass a local var
+	- listen_sensor writes it, answer_temperature() reads it
+"""
 latest_temp: float | None = None 
-	# the functions never call each other, so they can't pass a local var between them
-	# listen_sensor writes it, get_and_send_http reads it
-	# at "module-level" it lives ready in RAM
+
+
 
 # COM3 in
 async def listen_sensor() -> None:
 	""" Listen to COM3 and cache the latest sensor reading """
 
-	global latest_temp  # use the module-level var, not a new local one
+	global latest_temp  # module-level var for writing
 
 	while True:
-		### STUB ###
-		latest_temp = 18.3
-		############
+		latest_temp = 18.3   ## STUB
 		await asyncio.sleep(2)  # seconds
 
+async def answer_temperature() -> float | None:
+	""" return the latest reading
 
-# port 8000 in and out
-async def get_and_send_http() -> float | None:
-	""" Listen to port 8000 for http requests and return latest_temp
-
-		- global latest_temp not needed -- only writing needs it
-		- float | None because latest_temp will be None before the first reading
-
+		- TODO: get_and_send_http() will call this to answer the client's GET /temperature
+		- `float | None`: latest_temp will be None before the first reading
+		- no `global`: only writing needs it
 	"""
+	return latest_temp  # no `global` bc not writing
 
-	return latest_temp
+async def get_and_send_http(reader, writer) -> None:
+	""" port 8000 in and out: read the GET text, write the HTTP reply """
+	raise NotImplementedError
+
+async def main() -> None:
+	""" start it: sensor loop + server on 8000 """
+	raise NotImplementedError
 
 
 if __name__ == "__main__":
