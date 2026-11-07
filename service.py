@@ -22,9 +22,15 @@ async def listen_sensor() -> None:
 
 
 # port 8000 in and out
-async def get_and_send_http() -> float:
-	""" Listen to port 8000 for http requests """
-	raise NotImplementedError
+async def get_and_send_http() -> float | None:
+	""" Listen to port 8000 for http requests and return latest_temp
+
+		- global latest_temp not needed -- only writing needs it
+		- float | None because latest_temp will be None before the first reading
+
+	"""
+
+	return latest_temp
 
 
 if __name__ == "__main__":

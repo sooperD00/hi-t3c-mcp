@@ -229,3 +229,12 @@ FAILED test_service.py::test_get_and_send_http_returns_value_in_latest_temp[None
 ```
 
 - [x] git commit -m "test(RED): get_and_send_http() returns latest_temp" -m "stub raises NotImplementedError so both cases fail"
+- [x] return latest_temp in get_and_send_http()
+- [x] pytest -k http
+- [x] expect 2 passed
+
+```python
+====== 2 passed, 2 deselected in 0.11s ============
+```
+
+- [ ] git commit -m "test(GREEN): get_send_http() returns latest_temp"
