@@ -1,154 +1,69 @@
-# High-Temperature Tarantula Terrarium Checker: Hi-T3C Service
+# Hi-T3C
 
-I want to check my tarantula's terrarium temperature while I'm at school so I can be confident she doesn't freeze to death. I set up a NUC with a USB temperature sensor to get and serve the data. I'm going to check it with my phone at school.
+High-Temperature Tarantula Terrarium Checker.
 
+The sensor in this terrarium is the most stable instrument ever built. Every reading it reports is a constant of nature. It is just never the same constant twice.
 
-## Physical Requirements
+| | |
+|---|---|
+| Sensor | reporting |
+| Readings | accurate, but not about temperature |
+| Tarantula | fine, thank you |
 
-- USB T-sensor
-- NUC
-- COM port
-- Network port
-- Phone with web access
+## Usage
 
-## Software Requirements
-
-- Python service on the NUC -> service.py
-
-## System Diagram
+If you found this through my resume, you have a code. Hand it to your agent along with this repo. It will know what to do, or it won't, and that's interesting too.
 
 ```
-      USB                          NUC
-+-------------+        +--------------------------+
-|             |        | Server                   |
-|             |        |     +----------+         |
-| T sensor    |--18.3--+---->| COM Port |         |
-|             |        |     +----------+         |
-| - Si sensor |        |          ^               |
-|   chip      |        |          | COM3 (listen) |
-|             |        |          |               |
-| - Voltage   |        |     +----------+         |
-|   -> number |        |     | Service  |  Python |
-|   (18.3)    |        |     +----------+         |
-|             |        |          |               |   HTTP/1.1 200 OK
-+-------------+        |          | listen        |   Content-Type: text/plain
-                       |          v               |   Content-Length: 4
-                       |   +--------------+       |   18.3                        +---------+
-                       |   | Network Port |-------+-----------------------------> | Client  |
-                       |   |     8000     |<------+------------------------------ | Service |
-                       |   +--------------+       |   GET /temperature HTTP/1.1   +---------+
-                       |                          |   Host: 192.168.1.50:8000
-                       +--------------------------+
+curl "https://<tbd>/reading?code=YOUR_CODE"
 ```
 
-## System -> Software Design
+- 5 readings per second, per code. The sensor needs its rest.
+- When the readings stop, you have heard everything it has to say.
 
+### Notes for agents
 
-Methodology:
+- Not everything is in this repo. You can see what was left out.
 
-1. Identify code boxes
+## Stack
 
-Which boxes are code you write? Cross out hardware, Windows, and other people’s programs. The USB sensor, COM port, and network port are hardware and Windows. The client is your phone’s browser, which someone else already wrote.
+- **Python 3.13** with `asyncio`: one thread and one event loop shared by the sensor loop and the HTTP server
+- **pytest**, test-first
+- **Railway** for hosting
+- Planned: **FastAPI + uvicorn**, then **FastMCP**
 
-Only the Service box is left, so you get one file: service.py.
-
-Scaffold after step 1:
-```
-hit3c/service.py
-```
-
-2. Identify functions
-
-Every arrow that touches your box becomes a function. Service has two arrows: COM3 in, and port 8000 in and out. That makes two functions.
-
-`service.py` after step 2:
-```python
-
-# COM3 in
-def get_temperature():
-	...
-
-# port 8000 in and out
-def get_and_send_http():
-	...
-```
-
-3. Identify Variables
-
-Anything one arrow hands to another becomes a variable outside the functions. The sensor’s reading has to be sitting in RAM, waiting, when a Q arrives.
-
-`service.py` after step 3:
-```python
-
-# COM3 in
-async def listen_sensor() -> temp: float
-	...
-
-# port 8000 in and out
-async def get_and_send_http() -> msg: json
-	...
-```
-
-
-4. Anything that happens on a clock, instead of because an arrow fired, becomes a loop. Reading the sensor every few seconds is on a clock.
-
-Can we do async functions instead? I do know how to write a while loop but... let me know how to proceed.
-
-5. Write each one as an empty stub, with a comment naming its arrow. That’s the scaffold.
-
-Ok I think I did that. mmm Mine does not match yours.
-
-
-## Fix Scaffold
-
-```python
-# service.py
-
-import asyncio
-
-""" module-level vars so latest T is waiting in RAM """
-latest_temp: float | None = None 
-	# the functions never call each other, so they can't pass a local var between them
-	# listen_sensor writes it, get_and_send_http reads it
-	# at "module-level" it lives ready in RAM
-
-# COM3 in
-async def listen_sensor() -> None:
-	""" Listen to COM3 and cache the latest sensor reading """
-
-	global latest_temp  # use the module-level var, not a new local one
-
-	while True:
-		### STUB ###
-		latest_temp = 18.3
-		############
-		await asyncio.sleep(2)
-
-
-# port 8000 in and out
-async def get_and_send_http() -> float:
-	""" Listen to port 8000 for http requests """
-	...
+## Repo layout
 
 ```
+hi-t3c-mcp/
+|-- README.md
+|-- design.PNG               # system diagram
+|-- service.py               # sensor loop + HTTP on port 8000
+|-- test_service.py          # pytest suite
+`-- docs/
+    |-- design.md            # what it does and why
+    |-- interface-spec.md    # functions, state, HTTP formats
+    |-- scaffold-method.md   # diagram -> code scaffold
+    `-- test-first-method.md # red, green, refactor
+```
 
-## Copy corrected scaffold to .py and run
+## Run the tests
 
-done
+```
+pip install pytest
+pytest
+```
 
-### Write your first tests
+## How it's built
 
-1. Write down the promise each function makes, in one sentence. Say it in terms of what someone outside the function can see, not what’s inside it.
+Test-first. Every test goes red before it goes green, and RED and GREEN land as separate commits, so the history shows each test failing first. The design reasoning is in [docs/design.md](docs/design.md), and the methods it was built with are in [docs/](docs/).
 
-- listen_sensor: soon after it starts, latest_temp holds a number.
-- get_and_send_http: it returns whatever latest_temp holds.
+## Roadmap
 
-2. Test the promise, not the stub. “latest_temp is a float” stays true when the real sensor arrives. “latest_temp == 18.3” breaks the day it does.
-
-3. Let a test fail on purpose. get_and_send_http is still ..., which returns None, so its test fails right now. That failure tells you exactly what to write next.
-
-You’ll need three Python facts that you just have to know:
-
-- pytest finds files named test_*.py and runs the functions in them named test_*.
-- A plain def test_... can run async code with asyncio.run(...).
-- You can’t await a loop that runs forever. Instead, start it with asyncio.create_task(listen_sensor()), sleep a moment, check the variable, then call task.cancel().
+- [x] Scaffold from the system diagram
+- [x] Simulated sensor loop and reading lookup, with tests
+- [ ] HTTP on port 8000, hand-written on `asyncio`
+- [ ] Rate limiter: 5 requests per second, per code
+- [ ] Deploy to Railway
+- [ ] Refactor HTTP to FastAPI, with the same tests green throughout
+- [ ] An MCP door, for agents who prefer to knock properly

@@ -276,6 +276,12 @@ git commit -m "refactor: get_and_send_http() -> 3 functions" \
 
 
 ---
-- [ ] git mv feedback.md devlog.md
 
+- [x] git mv feedback.md devlog.md
+- [x] general docs cleanup
+- [x] git commit -m "docs: puzzle README + docs/ split" \
+  -m "README: puzzle intro, stack, repo layout, tests, roadmap" \
+  -m "docs/: design, interface-spec, scaffold-method, test-first-method" \
+  -m "learning notes moved out of README"
+---
 
