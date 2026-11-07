@@ -12,7 +12,7 @@ latest_temp: float | None = None
 async def listen_sensor() -> None:
 	""" Listen to COM3 and cache the latest sensor reading """
 
-	# global latest_temp  # use the module-level var, not a new local one
+	global latest_temp  # use the module-level var, not a new local one
 
 	while True:
 		### STUB ###

@@ -162,5 +162,14 @@ FAILED test_service.py::test_listen_sensor_writes_a_float_to_latest_temp - asser
 
 ```bash
 git add -A
-commit -m "test(RED): listen_sensor writes a float"
+commit -m "test(RED): listen_sensor() writes a float"
+```
+
+- [x] comment back in
+- [x] pytest
+- [x] 2 passed
+
+```bash
+git add -A
+commit -m "test(GREEN): listen_sensor() writes a float" -m "listen_sensor() declares global latest_temp inside the function to grab the module-level var properly from the outside"
 ```
