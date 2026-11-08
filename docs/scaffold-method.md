@@ -42,7 +42,7 @@ Example: "A request arrived at time `t`. Do we answer it?" becomes `RateLimiter(
 
 ## Worked example
 
-The Hi-T3C service ([diagram](../design.PNG)):
+The Hi-T3C service ([diagram](design.PNG)):
 
 1. Boxes: the USB sensor, COM port, and network port are hardware and the OS. The client is a phone browser. Only the Service box is left: `service.py`.
 2. Arrows: COM3 in, and port 8000 in and out.

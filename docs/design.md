@@ -26,17 +26,20 @@ The design started as a NUC on a desk with a USB sensor. The deployed version ru
 ## Repo layout
 
 ```
-rate_limiter/
+hi-t3c-mcp/
 |-- README.md
-|-- design.PNG             # system diagram
-|-- service.py             # the Service box: sensor loop + port 8000
-|-- test_service.py        # pytest tests for service.py
-|-- .gitignore             # __pycache__/, .pytest_cache/
+|-- service.py              # the Service box: sensor loop + port 8000
+|-- test_service.py         # pytest tests for service.py
+|-- .gitignore
 `-- docs/
-    |-- design.md          # this file: what, why
-    |-- interface-spec.md  # functions, state, HTTP in/out
-    |-- scaffold-method.md # diagram -> scaffold, any project
-    `-- test-first-method.md
+    |-- design.md           # this file: what, why
+    |-- design.PNG          # system diagram
+    |-- interface-spec.md   # functions, state, HTTP in/out
+    |-- scaffold-method.md  # diagram -> scaffold, any project
+    |-- test-first-method.md
+    |-- devlog.md           # working log
+    |-- stack-notes-python.md
+    `-- stack-notes-git.md
 ```
 
 ## Decisions

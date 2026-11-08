@@ -360,7 +360,7 @@ ERROR    asyncio:base_events.py:1879 Unhandled exception in client_connected_cb
 transport: <_ProactorSocketTransport fd=556 read=<_OverlappedFuture finished res
 ult=46>>
 Traceback (most recent call last):
-  File "C:\Users\Barac0da\source\repos\hi-t3c-mcp\service.py", line 35, in get_a
+  File "C:\...\hi-t3c-mcp\service.py", line 35, in get_a
 nd_send_http
     raise NotImplementedError
 NotImplementedError

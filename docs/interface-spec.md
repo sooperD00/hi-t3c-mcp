@@ -16,7 +16,8 @@ What the code exposes. This file changes whenever a field, signature, or format 
 |---|---|---|---|
 | `listen_sensor` | COM3 in | `async () -> None` | stub: writes 18.3 every 2 s |
 | `answer_temperature` | the number the reply carries | `async () -> float \| None` | done: returns `latest_temp` |
-| `handle_http` | port 8000 in and out | `async (reader, writer) -> None` | stub: raises `NotImplementedError` |
+| `handle_http` | port 8000 in and out | `async (reader, writer) -> None` | happy path: 200 + the reading |
+| `_build_reply` | builds the port 8000 reply | `(code, reason, content_type, body: str) -> bytes` | done (private helper) |
 | `main` | none: starts both arrows | `async () -> None` | stub: raises `NotImplementedError` |
 
 ## Config
@@ -58,5 +59,5 @@ Retry-After: 1
 
 ## Planned
 
-- `GET /reading?code=<code>`, rate limited per code
+- `GET /reading?code=<code>` replaces `/temperature` when access codes land; rate limited per code
 - An MCP tool wrapping the same reading
