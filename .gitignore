@@ -1,2 +1,6 @@
 __pycache__/
 .pytest_cache/
+
+# calibration constants: fundamental ones
+calibration_constants.json
+encode_message.py
