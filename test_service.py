@@ -41,3 +41,16 @@ def test_answer_temperature_returns_value_in_latest_temp(test_temp):
 
 	# check it
 	assert result == test_temp  # = assigns, == compares
+
+@pytest.mark.parametrize("test_temp", [18.3, None])
+def test_get_and_send_http_gets_and_sends_latest_temp():
+	""" temp value wrapped in http junk is returned """
+
+	# set it up (arrange)
+	service.latest_temp = test_temp  # 18.3, None
+
+	# call it (act)
+	result = asyncio.run(service.get_and_send_http("GET /temperature"))
+
+	# check it (assert)
+	assert result = concat("some_http_junk", test_temp, "some_more_http_junk")

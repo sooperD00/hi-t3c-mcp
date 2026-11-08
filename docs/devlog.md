@@ -283,5 +283,43 @@ git commit -m "refactor: get_and_send_http() -> 3 functions" \
   -m "README: puzzle intro, stack, repo layout, tests, roadmap" \
   -m "docs/: design, interface-spec, scaffold-method, test-first-method" \
   -m "learning notes moved out of README"
+
 ---
 
+your secrets ;)
+- [x] git commit -m "chore: BIG SECRETS!! now hidden in plain sight"
+- [x] git ls-files | grep calibration  # repo root
+    - expect: calibration_constants.json must NOT be listed
+    - actual [no output]
+
+create and push the repo to github
+- [x] gh repo create hi-t3c-mcp --public --source=. --push    # repo root
+- [x] description
+        "The most stable sensor ever built: every reading is a constant. Test-first Python asyncio service, headed for MCP."
+- [x] topics
+    python  asyncio  pytest  tdd  test-driven-development  rate-limiting  http-server  mcp  model-context-protocol  ai-agents  puzzle  railway
+
+---
+
+11/7 4:13p
+
+Next on your roadmap is HTTP on port 8000, hand-written on asyncio. It’s the same loop you’ve done twice now:
+
+- [ ] Write handle_http’s promise in one sentence: what someone outside the function can see.
+    - test_handle_http_gets_latest_temp()
+        set it up (arrange)
+            ask for the value
+        run it (act)
+            send the ask through the real function
+            received = (service.handle_http(GET /temperature))
+        check it (assert)
+            assert received == 
+
+
+Write the test and watch it go red. The stub already raises, so that part’s ready.
+Make it green.
+Commit RED and GREEN separately.
+
+Step 1 is the only thing to do right now. The “someone outside” here is the client on the other end of port 8000, so the promise is your blue and black arrows: what the client sends, and what it gets back.
+
+- [ ] refactor get_and_send_http -> handle_http()
