@@ -24,7 +24,7 @@ async def listen_sensor() -> None:
 async def answer_temperature() -> float | None:
 	""" return the latest reading
 
-		- TODO: get_and_send_http() will call this to answer the client's GET /temperature
+		- handle_http() calls this to answer the client's GET /temperature
 		- `float | None`: latest_temp will be None before the first reading
 		- no `global`: only writing needs it
 	"""
@@ -35,7 +35,7 @@ CRLF = "\r\n"  # every HTTP line ends with a carriage return + newline
 HTTP_VERSION = "HTTP/1.1"   # which HTTP rules both sides follow
 
 def _build_reply(code: str, reason: str, content_type: str, body: str) -> bytes:
-	""" the bytes a client sends: request line, Host header, blank line 
+	""" the bytes the server sends back: status line, headers, blank line, body
 	
 	example: 
 	b'HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 4\r\n\r\n18.3'
@@ -58,42 +58,31 @@ def _build_reply(code: str, reason: str, content_type: str, body: str) -> bytes:
 	text = status_line + CRLF + type_line + CRLF + len_line + CRLF + CRLF + body
 	return text.encode()                        # sockets carry bytes,
 
-async def get_and_send_http(reader, writer) -> None:
+async def handle_http(reader, writer) -> None:
 	""" port 8000 in and out: read the GET text, write the HTTP reply 
-	
-		streams: https://docs.python.org/3/library/asyncio-stream.html 
-			# "TCP echo server using streams"
 
-		example request, e.g. from test_service.py: 
-			b'GET /temperature HTTP/1.1\r\nHost: 127.0.0.1\r\n\r\n'
-		e.g. from a real client, like `curl localhost:8000/temperature`:
-			(more headers, still ending in a blank line):
-			```
+		example request (real client):
 			GET /temperature HTTP/1.1\r\n
 			Host: localhost:8000\r\n
 			User-Agent: curl/8.9.1\r\n
 			Accept: */*\r\n
 			\r\n
-			```
+		test str: b'GET /temperature HTTP/1.1\r\nHost: 127.0.0.1\r\n\r\n'
 	"""
 
-	# Read the request, up to the blank line
-	# # You never know how many headers a client will send, 
-	# # but the blank line always marks the end
-	blank_line = b"\r\n\r\n"
-	await reader.readuntil(blank_line)
+	# Read the request
+	blank_line = (CRLF + CRLF).encode()  # blank line always marks the end -> bytes
+	await reader.readuntil(blank_line)  
 	
-	# Get the number and turn it into body bytes
-	latest_temp = await answer_temperature()  # returns a float
-	# latest_temp_bytes = str(...).encode()
+	# Get the number (float)
+	answer = await answer_temperature()
 
-	# Build the reply: status line, headers, blank line, body 
-	# # the mirror image of your build_request
+	# Build the reply (mirror image of _build_request)
 	code = "200"
 	reason = "OK"
 	content_type =  "text/plain"
-	body = str(latest_temp)  # float -> str
-	reply = _build_reply(code, reason, content_type, body)
+	body = str(answer)  # float -> str
+	reply = _build_reply(code, reason, content_type, body)  # strs -> bytes
 
 	# Send it
 	writer.write(reply)

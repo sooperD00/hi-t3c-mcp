@@ -401,11 +401,16 @@ but latest_temp is a float
 
 REFACTOR: get_and_send_http()
 
-- [ ] `_build_reply` docstring line 1: it was copied from `_build_request`
+- [x] `_build_reply` docstring line 1: it was copied from `_build_request`
     ("the bytes a client sends")
       -> "the bytes the server sends back: status line, headers, blank line, body"
-- [ ] rename the local latest_temp in get_and_send_http to reading   
+- [x] rename the local latest_temp in get_and_send_http to reading   
     (same name as the global reads confusingly)
-- [ ] answer_temperature docstring: drop TODO, "will call" -> "calls"
-- [ ] delete the stale comment on line 88
-- [ ] get_and_send_http -> handle_http (service.py, test name, handler var)
+- [x] answer_temperature docstring: drop TODO, "will call" -> "calls"
+- [x] delete the stale comment on line 88
+- [x] get_and_send_http -> handle_http (service.py, test name, handler var)
+- [x] learning out of comments -> learning docs
+- [x] git commit -m "refactor: get_and_send_http() -> handle_http()" \
+  -m "test renamed: test_get_temperature_returns_200_with_the_reading" \
+  -m "end_of_headers as bytes; local latest_temp -> reading" \
+  -m "teaching comments moved out to stack-notes"

@@ -51,7 +51,7 @@ def test_answer_temperature_returns_value_in_latest_temp(test_temp):
 	assert result == test_temp  # = assigns, == compares
 
 
-### get_and_send_http()
+### handle_http()
 
 CRLF = "\r\n"  # every HTTP line ends with a carriage return + newline
 HTTP_VERSION = "HTTP/1.1"   # which HTTP rules both sides follow
@@ -64,7 +64,7 @@ def _build_request(method: str, path: str, host: str) -> bytes:
 	text = request_line + CRLF + host_header + CRLF + blank_line + CRLF
 	return text.encode()                        # sockets carry bytes, not str
 
-def test_get_and_send_http_answers_get_temperature():
+def test_get_temperature_returns_200_with_the_reading():
 	""" a client that sends GET /temperature gets 200 OK with the latest reading """
 
 	async def check():
@@ -73,7 +73,7 @@ def test_get_and_send_http_answers_get_temperature():
 		test_temp = 18.3
 		this_machine = "127.0.0.1"           # localhost: client and server on one computer
 		any_free_port = 0                    # 0 = let the OS choose
-		handler = service.get_and_send_http  # the server calls this once per connection
+		handler = service.handle_http  # the server calls this once per connection
 		request = _build_request("GET", "/temperature", this_machine)
 		expected_status = f"{HTTP_VERSION} 200 OK".encode()
 		end_of_headers = (CRLF + CRLF).encode()
