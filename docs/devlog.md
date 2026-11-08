@@ -305,7 +305,7 @@ create and push the repo to github
 
 Next on your roadmap is HTTP on port 8000, hand-written on asyncio. It’s the same loop you’ve done twice now:
 
-- [ ] Write handle_http’s promise in one sentence: what someone outside the function can see.
+- [x] Write handle_http’s promise in one sentence: what someone outside the function can see.
     - test_handle_http_gets_latest_temp()
         set it up (arrange)
             ask for the value
@@ -322,4 +322,68 @@ Commit RED and GREEN separately.
 
 Step 1 is the only thing to do right now. The “someone outside” here is the client on the other end of port 8000, so the promise is your blue and black arrows: what the client sends, and what it gets back.
 
-- [ ] refactor get_and_send_http -> handle_http()
+- [x] refactor get_and_send_http -> handle_http()
+- [x] git commit -m "wip(RED): first draft of the http test, doesn't run yet"
+
+---
+
+Your promise is right: the reading, wrapped in HTTP. What doesn’t work is the call.
+
+get_and_send_http doesn’t take a string, and it doesn’t return anything. The request arrives through reader and the reply leaves through writer, and those are the two ends of a real network connection. So the test can’t hand it "GET /temperature". The test has to be the client. It plays the Client Service box in your diagram: it opens a connection, sends the GET bytes, and reads the reply bytes.
+
+```python
+# open a connection
+# sends the GET bytes
+# read the reply bytes
+```
+
+- [ ] happy path: red, green, refactor (fold in the handle_http rename); commit each
+- [ ] catalog the status codes in interface-spec.md; commit
+- [ ] one test per category, xfail if its behavior is a later roadmap step; commit each category
+
+1. Group the categories by shared setup, not just by code. “Bad request bytes” (404, 400) can share one parametrized test, because only the bytes sent change. 503, 403, 429, and 410 each need their own setup, so each is its own category.
+2. Tests for behavior you haven’t built yet should be marked, not left red. pytest has @pytest.mark.xfail(reason="rate limiter not built yet"), which means “expected to fail.” The suite stays green while the test sits there documenting the plan. When you reach that roadmap step, delete the mark and you’re at RED for real.
+
+
+red: 
+```python
+>       assert reply.startswith(expected_status)
+E    AssertionError: assert False
+E     +  where False = <built-in method startswith of bytes object at 0x00007FF8
+297393A8>(b'HTTP/1.1 200 OK')
+E     +    where <built-in method startswith of bytes object at 0x00007FF8297393
+A8> = b''.startswith
+
+test_service.py:96: AssertionError
+------------------------------ Captured log call ------------------------------
+ERROR    asyncio:base_events.py:1879 Unhandled exception in client_connected_cb
+transport: <_ProactorSocketTransport fd=556 read=<_OverlappedFuture finished res
+ult=46>>
+Traceback (most recent call last):
+  File "C:\Users\Barac0da\source\repos\hi-t3c-mcp\service.py", line 35, in get_a
+nd_send_http
+    raise NotImplementedError
+NotImplementedError
+=========================== short test summary info ===========================
+FAILED test_service.py::test_get_and_send_http_answers_get_temperature - Asserti
+onError: assert False
+======================= 1 failed, 4 deselected in 0.35s =
+```
+
+green:
+your sevice.py needs to play the server now (the test is playing the client)
+- [ ] read https://docs.python.org/3/library/asyncio-stream.html. The “TCP echo server” example has almost exactly what you need.
+
+Step    What happens    The call
+1. Read the request, up to the blank line:
+    `await reader.readuntil(b"\r\n\r\n")`
+2. Get the number and turn it into body bytes
+    `await answer_temperature()`; `str(...).encode()`
+3. Build the reply: status line, headers, blank line, body
+    - the mirror image of your build_request
+4   Send it
+    `writer.write(reply)`; `await writer.drain()`
+5   Hang up
+    `writer.close()`
+
+- [ ] git commit -m "wip(RED): get_and_send_http() draft, doesn't run"
