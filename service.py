@@ -84,7 +84,7 @@ async def get_and_send_http(reader, writer) -> None:
 	await reader.readuntil(blank_line)
 	
 	# Get the number and turn it into body bytes
-	latest_temp = await answer_temperature()
+	latest_temp = await answer_temperature()  # returns a float
 	# latest_temp_bytes = str(...).encode()
 
 	# Build the reply: status line, headers, blank line, body 
@@ -92,7 +92,7 @@ async def get_and_send_http(reader, writer) -> None:
 	code = "200"
 	reason = "OK"
 	content_type =  "text/plain"
-	body = latest_temp
+	body = str(latest_temp)  # float -> str
 	reply = _build_reply(code, reason, content_type, body)
 
 	# Send it
