@@ -174,6 +174,37 @@ Compute it from the encoded body: `len(body.encode())`. `"18.3°C"` is 6 charact
 - `Host` is required, because one IP address can serve many websites.
 - Connections stay open by default, so the client needs `Content-Length` (or the server hanging up) to know where the body ends.
 
+## Clients only retry when told when
+
+Browsers and plain `curl` don't retry on their own. Well-behaved programs and most agents retry when the reply includes `Retry-After: <seconds>`. Send it with `503` and `429`.
+
+## A read timeout covers only the client sending its request
+
+One connection, start to finish:
+
+1. client connects
+2. client sends the request, up to the blank line    <- the read timeout covers only this
+3. server builds the reply and writes it
+4. client reads the reply                            <- a write timeout would cover this
+5. server hangs up
+
+- It is not a limit between requests. If the server hangs up after every reply, there's no connection between requests to time.
+- curl and agents send the whole request a few milliseconds after connecting, so they never get near it.
+- Slow networks are fine: a 100-byte request takes about 15 ms even over a 56k modem.
+- It catches clients that connect and then go quiet: stalled, malicious, or a person typing by hand.
+- On timeout, send `408 Request Timeout` with `Connection: close`, then hang up.
+
+## Typing HTTP by hand
+
+`nc` (netcat) and `telnet` open a raw connection; whatever you type goes over the wire as-is:
+
+    $ nc -C localhost 8000
+    GET /temperature HTTP/1.1
+    Host: localhost
+    <Enter again: the blank line>
+
+Plain `nc` sends only `\n` on Enter. `-C` makes it send `\r\n`, which HTTP requires; without it, a server waiting for `\r\n\r\n` never sees the end of the request, and its read timeout fires.
+
 # str and bytes
 
 ## A network connection carries bytes; Python strings are characters

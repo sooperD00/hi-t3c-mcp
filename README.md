@@ -70,7 +70,7 @@ Test-first. Every test goes red before it goes green, and RED and GREEN land as 
 - [x] HTTP: `GET /temperature` answers 200 with the reading, hand-written on `asyncio`
 - [ ] `main()`: start the sensor loop and the server on port 8000
 - [ ] Unhappy paths: no reading yet, unknown path (404), bad request (400)
-- [ ] Access codes: move to `/reading?code=YOUR_CODE`, 403 without a valid code
+- [ ] Access codes: move to `/reading?code=YOUR_CODE`, one reading per request per code, 403 without a valid code
 - [ ] Rate limiter: 5 requests per second, per code (429)
 - [ ] End of the readings (410)
 - [ ] Deploy to Railway

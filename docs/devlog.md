@@ -51,19 +51,19 @@ async def listen_sensor():
 
 11/6 2:25p
 
-- [ ] add a colon to the end of both def lines             # syntax error without it
-- [ ] listen_sensor: change -> float | None to -> None      # it never returns
-- [ ] listen_sensor: delete the return line                 # nothing after while True ever runs
-- [ ] get_and_send_http: delete the latest_temp parameter   # the sneaky one
+- [x] add a colon to the end of both def lines             # syntax error without it
+- [x] listen_sensor: change -> float | None to -> None      # it never returns
+- [x] listen_sensor: delete the return line                 # nothing after while True ever runs
+- [x] get_and_send_http: delete the latest_temp parameter   # the sneaky one
 
 ---
 
 11/7 12:46p
 
-- [ ] add at the top: import asyncio, import pytest, import service   # test_service.py
-- [ ] replace test 1 with the version below                          # test_service.py
-- [ ] replace test 2 with the skeleton below, fill in the 3 lines    # test_service.py
-- [ ] pytest                                                          # folder with both files
+- [x] add at the top: import asyncio, import pytest, import service   # test_service.py
+- [x] replace test 1 with the version below                          # test_service.py
+- [x] replace test 2 with the skeleton below, fill in the 3 lines    # test_service.py
+- [x] pytest                                                          # folder with both files
 
 
 learn: asyncio
@@ -115,9 +115,9 @@ Your `while True` in `listen_sensor` is still yours. It’s a small loop running
 
 ---
 
-- [ ] parameterize -> parametrize          # pytest's spelling; it errors on the other one
-- [ ] assert result == test_temp           # = assigns, == compares
-- [ ] make the indentation all tabs        # the last 4 lines use spaces, the first 3 use tabs
+- [x] parameterize -> parametrize          # pytest's spelling; it errors on the other one
+- [x] assert result == test_temp           # = assigns, == compares
+- [x] make the indentation all tabs        # the last 4 lines use spaces, the first 3 use tabs
 
 ---
 
@@ -206,7 +206,7 @@ FAILED test_service.py::test_get_and_send_http_returns_value_in_latest_temp[18.3
 ================= 1 failed, 1 passed, 2 deselected in 0.24s =======
 ```
 
-- [ ] git commit -m "test(RED): "???"
+- [x] git commit -m "test(RED): "???"
 
 > Make the stub able to fail. This is the standard trick. A stub that raises can’t accidentally match anything, so every case goes honestly red:
 
@@ -267,7 +267,7 @@ f3:
 
 plan: write your own http first, then refactor to FastAPI later
 
-- [ ] final
+- [x] final
 git commit -m "refactor: get_and_send_http() -> 3 functions" \
   -m "f1: answer_temperature() returns latest_temp (the old get_and_send_http body)" \
   -m "f2: get_and_send_http(reader, writer) reads the GET, writes the HTTP reply (stub)" \
@@ -337,9 +337,9 @@ get_and_send_http doesn’t take a string, and it doesn’t return anything. The
 # read the reply bytes
 ```
 
-- [ ] happy path: red, green, refactor (fold in the handle_http rename); commit each
-- [ ] catalog the status codes in interface-spec.md; commit
-- [ ] one test per category, xfail if its behavior is a later roadmap step; commit each category
+- [x] happy path: red, green, refactor (fold in the handle_http rename); commit each
+- [c] catalog the status codes in interface-spec.md; commit
+- [c] one test per category, xfail if its behavior is a later roadmap step; commit each category
 
 1. Group the categories by shared setup, not just by code. “Bad request bytes” (404, 400) can share one parametrized test, because only the bytes sent change. 503, 403, 429, and 410 each need their own setup, so each is its own category.
 2. Tests for behavior you haven’t built yet should be marked, not left red. pytest has @pytest.mark.xfail(reason="rate limiter not built yet"), which means “expected to fail.” The suite stays green while the test sits there documenting the plan. When you reach that roadmap step, delete the mark and you’re at RED for real.
@@ -387,6 +387,8 @@ Step    What happens    The call
     `writer.close()`
 
 - [x] git commit -m "wip(RED): get_and_send_http() draft, doesn't run"
+- [!] git commit -m "test(RED): get_and_send_http() happy path"
+    - you forgot this one
 
 ---
 
@@ -399,6 +401,8 @@ but latest_temp is a float
 
 ---
 
+11/8 2:00p
+
 REFACTOR: get_and_send_http()
 
 - [x] `_build_reply` docstring line 1: it was copied from `_build_request`
@@ -410,7 +414,96 @@ REFACTOR: get_and_send_http()
 - [x] delete the stale comment on line 88
 - [x] get_and_send_http -> handle_http (service.py, test name, handler var)
 - [x] learning out of comments -> learning docs
-- [x] git commit -m "refactor: get_and_send_http() -> handle_http()" \
+- [!] git commit -m "refactor: get_and_send_http() -> handle_http()" \
   -m "test renamed: test_get_temperature_returns_200_with_the_reading" \
   -m "end_of_headers as bytes; local latest_temp -> reading" \
   -m "teaching comments moved out to stack-notes"
+from our new stack-notes-git.md docs:
+- [x] git commit --amend -m "chore(refactor): get_and_send_http() -> handle_http()" \
+  -m "test renamed: test_get_temperature_returns_200_with_the_reading" \
+  -m "end_of_headers as bytes; local latest_temp -> reading" \
+  -m "teaching comments moved out to stack-notes"
+- [x] git push --force    # only safe if nobody else has pulled it
+
+---
+
+WORKFLOW:
+test(RED), feat(GREEN), chore(refactor), docs(cleanup), docs(plan)
+
+---
+
+DOCS: cleanup: 11/8 3:26p: PR/1 Claude.ai "Sensor data rate limiter service"
+
+---
+
+PLAN: http test suite: 11/8 4:01p
+
+- [x] catalog the status codes in interface-spec.md; commit
+    - [x] add a "Status codes" section to docs/interface-spec.md    # draft below
+    - [c] decide: 503, or 200 with "None", before the first reading
+    - [~] git commit -m "docs(plan): catalog the status codes"
+
+
+```markdown
+interface-spec.md:
+
+## Status codes
+
+| Code | Meaning here | Test category | Built in |
+|---|---|---|---|
+| `200 OK` | a reading exists; body is the reading | happy path | done |
+| `503 Service Unavailable` | no reading yet | no reading | now |
+| `404 Not Found` | path isn't `/temperature` (or a hint) | bad request | path parsing |
+| `400 Bad Request` | the bytes aren't valid HTTP | bad request | path parsing |
+| `403 Forbidden` | code missing or not on the list | access | access codes |
+| `429 Too Many Requests` | over 5 per second for this code | rate | rate limiter |
+| `410 Gone` | the readings are finished | end | end of message |
+
+One test per category. The two bad-request codes share a parametrized test, since only the bytes sent change.
+```
+
+how did you come up with this list?
+- [x] docs/http-error-model-method.md
+- [x] add more codes to interface-spec.md now that we applied the method:
+```markdown
+405 Method Not Allowed  POST /temperature and the like, or fold it into 404
+431 Request Header Fields Too Large no blank line within 64 KB
+hang up, or 408 Request Timeout the client is too slow sending its request
+```
+Three decisions are still open in both files: 503 versus 200 with “None,” 405 versus 404, and hanging up versus 408.
+
+The repo-layout trees in the README and design.md don’t list the new file yet. Add a line to each, or leave them for the next cleanup. A commit message that covers both files:
+
+---
+
+WORKFLOW:
+test(plan), test(WIP), test(RED), feat(WIP), feat(GREEN), chore(refactor), docs(cleanup), docs(plan)
+
+----
+
+- [ ] remaining
+    - [!] decide: 503, or 200 with "None", before the first reading
+        - [x] decision: 503 + Retry-After: 2
+        - [x] learning: clients only retry when told when -> stack-notes-python.md
+        - [x] decision: "not ready" is a status, not a value -> design.md #7
+        - [!] new problem: clock-based readings repeat for fast clients
+            - [x] decision/solution: when you implement access codes, make each allowed request gets the next reading for its code. That way nothing repeats and the end `410` is per code.
+            - [c] captured in: design.md #8, README roadmap (access codes)
+    - [!] still open: fold 405 and 501 into 404?
+        - [x] decision: no -- these are different requests
+        - [c] captured in interface-spec.md, http-error-model-method.md
+    - [!] hang up vs 408
+        - [x] decision: send 408 with a Connection: close header, then hang up
+            (compatible with FastAPI too)
+        - [c] captured in multiple docs
+
+- [ ] commit the catalog + method doc               # this step, docs only
+    - [ ] git commit -m "docs(plan): error model method + status codes catalog"
+
+- [ ] test stubs, one per category, all xfail       # next commit: test(plan): ...
+    - [ ] git commit -m "test(plan): test stubs, one per category, all xfail"
+
+- [ ] then each category: remove xfail -> RED -> GREEN -> refactor
+
+
+- [ ] one test per category, xfail if its behavior is a later roadmap step; commit each category

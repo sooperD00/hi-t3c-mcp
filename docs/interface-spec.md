@@ -28,6 +28,7 @@ What the code exposes. This file changes whenever a field, signature, or format 
 | Sensor port | `COM3` |
 | HTTP port | 8000 |
 | Rate limit (planned) | 5 requests per 1 s |
+| Read timeout (planned) | 10 s  (slow enough for a phone connection) |
 
 ## HTTP
 
@@ -56,6 +57,28 @@ HTTP/1.1 429 Too Many Requests
 Retry-After: 1
 
 ```
+
+## Status codes
+
+| Code | Meaning here | Test category | Built in |
+|---|---|---|---|
+| `200 OK` | a reading exists; body is the reading | happy path | done |
+| `503 Service Unavailable` | no reading yet; reply carries `Retry-After: 2` | no reading | now |
+| `404 Not Found` | path isn't `/temperature` (or a hint) | bad request | path parsing |
+| `405 Method Not Allowed` | path exists, method doesn't (`POST /temperature`); reply carries `Allow: GET` | bad request | path parsing |
+| `400 Bad Request` | the bytes aren't valid HTTP | bad request | path parsing |
+| `431 Request Header Fields Too Large` | no blank line within 64 KB | bad request | path parsing |
+| `501 Not Implemented` | a method the server doesn't recognize at all (`FOO /temperature`) | bad request | path parsing |
+| `408 Request Timeout` | the client is too slow sending its request; reply carries `Connection: close`, then the server hangs up | slow client | read timeout |
+| `403 Forbidden` | code missing or not on the list | access | access codes |
+| `429 Too Many Requests` | over 5 per second for this code | rate | rate limiter |
+| `410 Gone` | the readings are finished | end | end of message |
+
+One test per category. The two bad-request codes share a parametrized test, since only the bytes sent change.
+
+The slow-client test checks the promise (that the server hangs up in time) and accepts either an empty reply or `408`.
+
+Methodology: [http-error-model-method.md](http-error-model-method.md).
 
 ## Planned
 

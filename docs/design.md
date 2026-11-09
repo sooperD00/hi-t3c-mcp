@@ -71,3 +71,11 @@ A public port on a home network exposes the home IP address.
 ### 6. MCP as a second interface
 
 FastMCP uses decorators the same way FastAPI does. The MCP tool can wrap the same functions the HTTP endpoint uses.
+
+### 7. "Not ready" is a status code, not a value
+
+Before the first reading, the reply is `503` with `Retry-After: 2`, never a `200` carrying a placeholder. If both came back as `200`, a client couldn't tell "not ready" from a real value.
+
+### 8. Planned: each access code gets its own sequence
+
+Readings currently change on a clock, so a client polling faster than the sensor period gets repeats, and can't tell a repeat from two equal readings in a row. With access codes, each allowed request gets the next reading for its code. Nothing repeats, and the end (`410`) is per code.
