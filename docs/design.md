@@ -79,3 +79,10 @@ Before the first reading, the reply is `503` with `Retry-After: 2`, never a `200
 ### 8. Planned: each access code gets its own sequence
 
 Readings currently change on a clock, so a client polling faster than the sensor period gets repeats, and can't tell a repeat from two equal readings in a row. With access codes, each allowed request gets the next reading for its code. Nothing repeats, and the end (`410`) is per code.
+
+### 9. Planned: rate limit with a sliding window log
+
+Each access code keeps the timestamps of its allowed requests. A request is allowed if fewer than 5 of those timestamps fall within the last second. Rejected requests don't count toward the five, and each 429 is logged per access code.
+
+Considered: a token bucket (steady refill, allows short bursts). Not chosen, because the promise is "at most 5 in any 1-second window," and a sliding window log enforces that exactly.
+[t-PLACEHOLDER] follow-up: build a token bucket with the same allow(t) shape and compare the edge case: a 6th request at 0.3 s (bucket: 200, window: 429).

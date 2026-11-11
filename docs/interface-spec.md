@@ -70,7 +70,7 @@ Retry-After: 1
 | `431 Request Header Fields Too Large` | no blank line within 64 KB | bad request | path parsing |
 | `501 Not Implemented` | a method the server doesn't recognize at all (`FOO /temperature`) | bad request | path parsing |
 | `408 Request Timeout` | the client is too slow sending its request; reply carries `Connection: close`, then the server hangs up | slow client | read timeout |
-| `403 Forbidden` | code missing or not on the list | access | access codes |
+| `403 Forbidden` | access code missing or not on the list | access | access codes |
 | `429 Too Many Requests` | over 5 per second for this code | rate | rate limiter |
 | `410 Gone` | the readings are finished | end | end of message |
 

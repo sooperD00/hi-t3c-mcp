@@ -481,7 +481,9 @@ test(plan), test(WIP), test(RED), feat(WIP), feat(GREEN), chore(refactor), docs(
 
 ----
 
-- [ ] remaining
+PLAN: http test suite (continued - remaining decisions): 11/8 4:47p
+
+- [x] remaining
     - [!] decide: 503, or 200 with "None", before the first reading
         - [x] decision: 503 + Retry-After: 2
         - [x] learning: clients only retry when told when -> stack-notes-python.md
@@ -497,11 +499,164 @@ test(plan), test(WIP), test(RED), feat(WIP), feat(GREEN), chore(refactor), docs(
             (compatible with FastAPI too)
         - [c] captured in multiple docs
 
-- [ ] commit the catalog + method doc               # this step, docs only
-    - [ ] git commit -m "docs(plan): error model method + status codes catalog"
+- [x] commit the catalog + method doc               # this step, docs only
+    - [x] git commit -m "docs(plan): error model method + status codes catalog"
 
-- [ ] test stubs, one per category, all xfail       # next commit: test(plan): ...
-    - [ ] git commit -m "test(plan): test stubs, one per category, all xfail"
+---
+
+PLAN: http test suite (continued - test stubs, all xfail): 11/8 4:50p
+next commit: test(plan): ...
+
+- [x] write test stubs, one per category, all xfail       
+- [x] pytest -k http
+        - [x] http collects all the http tests (15, bc of the parametrize)
+        - [x] 1 pass, 4 deselected, 10 xfailed
+- [ ] git commit -m "test(plan): all http test stubs, one per category, all xfail"
+
+
+## Test names: 
+
+Corrections:
+- test_http_ on every one. They all test over a real connection, so pytest -k http runs exactly this group. Right now your happy-path test doesn’t contain “http,” so -k http misses it.
+- Not answer_temperature. These tests never call that function. The subject is the HTTP request, and answer_temperature already has its own test.
+- Situation first, code last. Each name reads like a bug report, and the codes line up at the end when you scan pytest’s output.
+- 408 names the promise. “Is disconnected” is what the test checks. The 408 is the optional courtesy.
+- 429 names the boundary. “Sixth request in one second” says exactly where the line is.
+- 403 covers both cases. Missing and invalid codes both get it, so “without a valid code” fits
+
+## Writing "promises" in the docstrings:
+
+Applied to 403
+Question    Answer
+Who is outside? a client
+What do they do?    asks for a reading
+What’s true beforehand? they have no code, or a code that isn’t on the list
+What do they see?   403 Forbidden
+What must not happen?   they get a reading anyway
+
+Now you try:
+> slow client
+@pytest.mark.xfail(reason="read timeout not built yet", strict=True)
+def test_http_slow_client_is_disconnected():
+    """408 Request Timeout | the client is too slow sending its request; reply carries `Connection: close`, then the server hangs up"""
+    raise NotImplementedError("test not written yet")
+
+Who is outside? a client
+What do they do?    makes a connection but takes a long time before asking for a reading
+What’s true beforehand? client just opened the connection
+What do they see?   408 Request Timeout
+What must not happen?   get a reading and/or stay connected 
+
+test_http_slow_client_is_disconnected
+
+A client who makes a connection but then doesn't send a request for x seconds gets 408 and the server hangs up
+
+corrections:
+Question    Yours   Refined
+What do they do?
+    - [~] takes a long time before asking 
+    - [x] doesn’t finish sending its request
+What’s true beforehand?
+    - [~] client just opened the connection
+    - [x] the connection is open; the read timeout is set
+What do they see?
+    - [~] 408
+    - [x] the connection closes, with a 408 first
+What must not happen?
+    - [~] get a reading, stay connected
+    - [x] stay connected (the main promise)
+
+promise: a client that doesn't finish its request within the read timeout gets hung up on, with a 408 first
+
+Try again:
+> rate
+@pytest.mark.xfail(reason="rate limiter not built yet", strict=True)
+def test_http_sixth_request_in_one_second_returns_429():
+    """429 Too Many Requests | over 5 per second for this code"""
+    raise NotImplementedError("test not written yet")
+
+Who is outside? a client
+What do they do? ask for a 6th request within 1 second
+What’s true beforehand? 5 requests within 1 second
+What do they see? 429
+What must not happen? get a reading
+
+a client that sends a sixth request within a 1 second sliding window gets 429 until x
+
+feedback: The promise has two edges. The 6th request inside the window gets 429, and a request after the window slides gets 200 again. The second edge is your “until x,” and it can be a second test too.
+
+@pytest.mark.xfail(reason="rate limiter not built yet", strict=True)
+def test_http_sixth_request_in_one_second_returns_429():
+    """429 Too Many Requests | over 5 per second for this access code
+    a sixth request from one access code within a 1-second sliding window gets 429 and no reading; Retry-After says when to try again"""
+    raise NotImplementedError("test not written yet")
+
+Try a 3rd time:
+> end (last reading)
+@pytest.mark.xfail(reason="end of readings not built yet", strict=True)
+def test_http_after_last_reading_returns_410():
+    """410 Gone | the readings are finished"""
+    raise NotImplementedError("test not written yet")
+
+Who is outside? a client
+What do they do? asks for a reading after the last one available
+What’s true beforehand? the last reading was sent
+What do they see? 410 and the message that tells them it's the last one, because the design of the sensor might not indicate that it would ever stop in "reality". Should we hang up too?
+What must not happen? keep sending readings
+
+a client that sends a request after the last reading has been sent gets 410 Gone and a message to tell them that there are no more readings (and we hang up?)
+
+++:
+> end (last reading)
+@pytest.mark.xfail(reason="end of readings not built yet", strict=True)
+def test_http_after_last_reading_returns_410():
+    """410 Gone | the readings are finished for this access code
+    a request after this access code's last reading gets 410, a note that there are no more readings,
+    and no reading; the sequence never starts over"""
+    raise NotImplementedError("test not written yet")
+
+---
+
+- [x] happy path
+    [x] test_get_temperature_returns_200_with_the_reading
+    [ ] test_http_get_temperature_returns_200_with_the_reading
+- [ ] no reading
+    - [~] test_get_temperature_returns_503_with_no_reading_yet
+    - [ ] test_http_before_first_reading_returns_503
+        - [ ] 503 Service Unavailable | no reading yet; reply carries Retry-After: 2
+- [ ] bad request
+    - [~] @pytest.mark.parametrize(input, [list of input])?
+    - [~] test_get_temperature_returns_error_codes_for_bad_requests
+    - [ ] test_http_bad_request_returns_its_code
+        - [ ] `404 Not Found` | path isn't `/temperature` (or a hint)
+        - [ ] `405 Method Not Allowed` | path exists, method doesn't (`POST /temperature`); reply carries `Allow: GET`
+        - [ ] `400 Bad Request` | the bytes aren't valid HTTP
+        - [ ] `431 Request Header Fields Too Large` | no blank line within 64 KB `501 Not Implemented` | a method the server doesn't recognize at all (`FOO /temperature`)
+- [ ] slow client
+    - [~] test_answer_temperature_returns_408_on_timeout
+    - [ ] test_http_slow_client_is_disconnected
+        - [ ] `408 Request Timeout` | the client is too slow sending its request; reply carries `Connection: close`, then the server hangs up
+- [ ] access
+    - [~] test_answer_temperature_returns_403_on_missing_code
+    - [ ] test_http_without_valid_code_returns_403
+        - [ ] `403 Forbidden` | code missing or not on the list
+- [ ] rate
+    - [~] test_answer_temperature_returns_429_rate_limited
+    - [ ] test_http_sixth_request_in_one_second_returns_429
+        - [ ] `429 Too Many Requests` | over 5 per second for this code
+- [ ] end
+    - [~] test_answer_temperature_returns_410_on_end_of_readings
+    - [ ] test_http_after_last_reading_returns_410
+        - [ ] `410 Gone` | the readings are finished
+
+
+
+
+
+
+---
+
+
 
 - [ ] then each category: remove xfail -> RED -> GREEN -> refactor
 

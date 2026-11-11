@@ -64,8 +64,10 @@ def _build_request(method: str, path: str, host: str) -> bytes:
 	text = request_line + CRLF + host_header + CRLF + blank_line + CRLF
 	return text.encode()                        # sockets carry bytes, not str
 
-def test_get_temperature_returns_200_with_the_reading():
-	""" a client that sends GET /temperature gets 200 OK with the latest reading """
+# happy path
+def test_http_get_temperature_returns_200_with_the_reading():
+	"""200 OK | a reading exists; body is the reading
+	a client that sends GET /temperature gets 200 OK with the latest reading as the whole body, then the server hangs up"""
 
 	async def check():
 
@@ -97,3 +99,67 @@ def test_get_temperature_returns_200_with_the_reading():
 		assert reply.endswith(end_of_headers + expected_body)
 
 	asyncio.run(check())
+
+# no reading
+@pytest.mark.xfail(reason="503 reply not built yet", strict=True)
+def test_http_before_first_reading_returns_503():
+	"""503 Service Unavailable | no reading yet; reply carries Retry-After: 2
+	a client asking before the first reading gets 503 with Retry-After set to the sensor period,
+	never a 200 with a placeholder like 'None'"""
+	raise NotImplementedError("test not written yet")
+
+# bad requests
+NOT_HTTP = ("not http at all" + CRLF + CRLF).encode()  # not valid HTTP
+HUGE_HEADERS = (
+	(f"GET /temperature {HTTP_VERSION}{CRLF}X-Filler: ").encode()
+	+ b"a" * 70_000  # no blank line within 64 KB
+)
+
+BAD_REQUESTS = {
+	# situation:            (code,  name,                              request)
+	"unknown path":         ("404", "Not Found",                       _build_request("GET",  "/nope",        "localhost")),
+	"POST to /temperature": ("405", "Method Not Allowed",              _build_request("POST", "/temperature", "localhost")),
+	"not HTTP":             ("400", "Bad Request",                     NOT_HTTP),
+	"headers over 64 KB":   ("431", "Request Header Fields Too Large", HUGE_HEADERS),
+	"unknown method":       ("501", "Not Implemented",                 _build_request("FOO",  "/temperature", "localhost")),
+}
+
+@pytest.mark.xfail(reason="path parsing not built yet", strict=True)
+@pytest.mark.parametrize("situation", BAD_REQUESTS,
+	ids=lambda s: f"{BAD_REQUESTS[s][0]} {BAD_REQUESTS[s][1]} ({s})")
+def test_http_bad_request_returns_its_status_code(situation):
+	"""400, 404, 405, 431, 501 | bad request
+	a client sending a request the server can't serve gets that situation's status code and name, and no reading;
+	405 also carries Allow: GET, and the server keeps serving the next client"""
+	status_code, name, request_bytes = BAD_REQUESTS[situation]
+	raise NotImplementedError("test not written yet")
+
+# slow client
+@pytest.mark.xfail(reason="read timeout not built yet", strict=True)
+def test_http_slow_client_is_disconnected():
+	"""408 Request Timeout | client too slow sending its request; reply carries Connection: close, then the server hangs up
+	a client that doesn't finish its request within the read timeout gets hung up on, with a 408 first"""
+	raise NotImplementedError("test not written yet")
+
+# access
+@pytest.mark.xfail(reason="access codes not built yet", strict=True)
+def test_http_reading_without_valid_access_code_returns_403():
+	"""403 Forbidden | access code missing or not on the list
+	a client asking for a reading without a valid access code gets 403 and no reading"""
+	raise NotImplementedError("test not written yet")
+
+# rate
+@pytest.mark.xfail(reason="rate limiter not built yet", strict=True)
+def test_http_sixth_request_in_one_second_returns_429():
+	"""429 Too Many Requests | over 5 per second for this access code
+	a sixth request from one access code within a 1-second sliding window gets 429 and no reading;
+	Retry-After says when to try again, and rejected requests don't count toward the five"""
+	raise NotImplementedError("test not written yet")
+
+# end (last reading)
+@pytest.mark.xfail(reason="end of readings not built yet", strict=True)
+def test_http_after_last_reading_returns_410():
+	"""410 Gone | the readings are finished for this access code
+	a request after this access code's last reading gets 410, a note that there are no more readings,
+	and no reading; the sequence never starts over"""
+	raise NotImplementedError("test not written yet")
