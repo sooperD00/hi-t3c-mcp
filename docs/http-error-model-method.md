@@ -43,6 +43,7 @@ The walk is also a check. If it finds a gate that no source produced, a source w
 - **One test per category**, where a category is a group of requests the service treats the same way (*equivalence partitioning*). Codes that share a setup and differ only in the bytes sent can share one parametrized test.
 - **Tests at the edges** (*boundary values*), like the 5th versus 6th request in one second.
 - **Tests for gates not built yet** get `@pytest.mark.xfail(reason=...)` until their step on the roadmap.
+- **From the table to the tests:** each "Test category" becomes one test, and each "Built in" becomes that test's `xfail` reason. See "From the error model to a test" in [test-first-method.md](test-first-method.md).
 
 ### 6. Reality check
 

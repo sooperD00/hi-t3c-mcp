@@ -28,6 +28,17 @@ Python raises `TabError` or `IndentationError: unindent does not match any outer
 
 `-> float`, not `-> temp: float`. `json` isn't a type; use what the function actually returns.
 
+## Split long expressions with parentheses, not backslashes
+
+```python
+HUGE_HEADERS = (
+	(f"GET /temperature {HTTP_VERSION}" + CRLF + "X-Filler: ").encode()
+	+ b"a" * 70_000
+)
+```
+
+A backslash breaks silently if a stray space ends up after it.
+
 # asyncio
 
 ## What the event loop is
@@ -217,6 +228,10 @@ Plain `nc` sends only `\n` on Enter. `-C` makes it send `\r\n`, which HTTP requi
 
 Turn numbers into text first: `str(18.3).encode()`.
 
+## `.encode` versus `.encode()`
+
+Without the parentheses you get the method itself, not its result. Adding it to bytes crashes when the file loads, so pytest reports `ERROR collecting` for the whole file.
+
 # pytest
 
 ## When a server test gets an empty reply, read "Captured log call" first
@@ -239,14 +254,26 @@ Assert on the promise (status line, body), not every header, so the test survive
 ## `xfail` for planned behavior
 
 ```python
-@pytest.mark.xfail(reason="rate limiter not built yet")
+@pytest.mark.xfail(reason="rate limiter not built yet", strict=True)
 ```
 
-Marks a test as expected to fail, so the suite stays green while the test documents the plan. Delete the mark when you build the behavior. `strict=True` turns an unexpected pass into a failure, which tells you when the mark is stale.
+Marks a test as expected to fail, so the suite stays green while the test documents the plan. Delete the mark when you build the behavior. `strict=True` turns an unexpected pass into a failure, which tells you when the mark is stale. `pytest -rx` prints every xfail with its reason.
 
 ## Don't take expected values from the code under test
 
 Give the test its own `CRLF` rather than importing the service's. If both use one definition, a mistake in it passes both.
+
+## Parametrize over a dict
+
+```python
+@pytest.mark.parametrize("situation", BAD_REQUESTS,
+	ids=lambda s: f"{BAD_REQUESTS[s][0]} {BAD_REQUESTS[s][1]} ({s})")
+def test_http_bad_request_returns_its_status_code(situation):
+	status_code, name, request_bytes = BAD_REQUESTS[situation]
+```
+
+- Parametrizing over a dict runs once per key, and pytest names each run by the key.
+- `ids=` takes a function for richer labels: `[404 Not Found (unknown path)]`.
 
 # Naming
 
