@@ -64,7 +64,7 @@ def _build_request(method: str, path: str, host: str) -> bytes:
 	text = request_line + CRLF + host_header + CRLF + blank_line + CRLF
 	return text.encode()                        # sockets carry bytes, not str
 
-# happy path
+# happy path (handle_http): the reply is right
 def test_http_get_temperature_returns_200_with_the_reading():
 	"""200 OK | a reading exists; body is the reading
 	a client that sends GET /temperature gets 200 OK with the latest reading as the whole body, then the server hangs up"""
@@ -100,7 +100,7 @@ def test_http_get_temperature_returns_200_with_the_reading():
 
 	asyncio.run(check())
 
-# no reading
+# no reading (handle_http)
 @pytest.mark.xfail(reason="503 reply not built yet", strict=True)
 def test_http_before_first_reading_returns_503():
 	"""503 Service Unavailable | no reading yet; reply carries Retry-After: 2
@@ -108,7 +108,7 @@ def test_http_before_first_reading_returns_503():
 	never a 200 with a placeholder like 'None'"""
 	raise NotImplementedError("test not written yet")
 
-# bad requests
+# bad requests (handle_http)
 NOT_HTTP = ("not http at all" + CRLF + CRLF).encode()  # not valid HTTP
 HUGE_HEADERS = (
 	(f"GET /temperature {HTTP_VERSION}{CRLF}X-Filler: ").encode()
@@ -134,21 +134,21 @@ def test_http_bad_request_returns_its_status_code(situation):
 	status_code, name, request_bytes = BAD_REQUESTS[situation]
 	raise NotImplementedError("test not written yet")
 
-# slow client
+# slow client (handle_http)
 @pytest.mark.xfail(reason="read timeout not built yet", strict=True)
 def test_http_slow_client_is_disconnected():
 	"""408 Request Timeout | client too slow sending its request; reply carries Connection: close, then the server hangs up
 	a client that doesn't finish its request within the read timeout gets hung up on, with a 408 first"""
 	raise NotImplementedError("test not written yet")
 
-# access
+# access (handle_http)
 @pytest.mark.xfail(reason="access codes not built yet", strict=True)
 def test_http_reading_without_valid_access_code_returns_403():
 	"""403 Forbidden | access code missing or not on the list
 	a client asking for a reading without a valid access code gets 403 and no reading"""
 	raise NotImplementedError("test not written yet")
 
-# rate
+# rate (handle_http)
 @pytest.mark.xfail(reason="rate limiter not built yet", strict=True)
 def test_http_sixth_request_in_one_second_returns_429():
 	"""429 Too Many Requests | over 5 per second for this access code
@@ -156,10 +156,14 @@ def test_http_sixth_request_in_one_second_returns_429():
 	Retry-After says when to try again, and rejected requests don't count toward the five"""
 	raise NotImplementedError("test not written yet")
 
-# end (last reading)
+# end = last reading (handle_http)
 @pytest.mark.xfail(reason="end of readings not built yet", strict=True)
 def test_http_after_last_reading_returns_410():
 	"""410 Gone | the readings are finished for this access code
 	a request after this access code's last reading gets 410, a note that there are no more readings,
 	and no reading; the sequence never starts over"""
 	raise NotImplementedError("test not written yet")
+
+### main()
+
+# happy path (main)

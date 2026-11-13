@@ -1,4 +1,70 @@
 11/6/26 2:07p
+hi-t3c-mcp 20261106: discovery
+
+NEXT TIME:
+
+- [ ] Unhappy paths: no reading yet, unknown path (404), bad request (400)
+
+Then each category: remove xfail -> RED -> GREEN -> refactor
+
+RGR for for each test:
+
+- [x] happy path
+- [ ] no reading
+- [ ] bad request
+- [ ] slow client
+- [ ] access
+- [ ] rate
+- [ ] end
+
+---
+
+
+11/12/2026 3:02p
+
+WORKFLOW:
+x want(feat), docs(plan), test(plan), test(WIP), test(RED), feat(WIP), feat(GREEN), chore(refactor), docs(cleanup), docs(learn), repeat
+
+want (README.md): roadmap item
+- [x] `main()`: start the sensor loop and the server on port 8000
+
+user-story: what can someone do after this that they can’t do now?
+`As a ___, I want ___, so that ___`
+- [x] "As a client, I want the service to be up, so that I can reach it"
+
+why (in product terms)
+- [x] so that I can reach it?
+
+commit:
+- [ ] git commit -m "want(feat): start the service and reach it"
+
+WORKFLOW: 
+Step    Where   What comes out
+want(kind)    devlog  the why, in product terms
+docs(plan)    devlog  the five questions, the promise, the test name
+test(plan)  code    the stubs, committed
+
+plan feature
+   -> write a test that says it, and watch it fail      (red)
+   -> write just enough code to pass                    (green)
+   -> clean up while it stays green                     (refactor)
+   -> next feature
+
+Step    For main()
+want    “I want to start the service and reach it”
+red the smoke test fails, because main() raises NotImplementedError
+green   write main(): start the sensor loop, start the server
+refactor    tidy, and make python service.py call it
+
+claude.ai conversation started compacting -> move to a new one
+hi-t3c-mcp 20261106: discovery
+
+new chat:
+hi-t3c-mcp 20261112: part deux
+
+
+
+---
 
 Claude wrote:
 
@@ -511,7 +577,7 @@ next commit: test(plan): ...
 - [x] pytest -k http
         - [x] http collects all the http tests (15, bc of the parametrize)
         - [x] 1 pass, 4 deselected, 10 xfailed
-- [ ] git commit -m "test(plan): all http test stubs, one per category, all xfail"
+- [c] git commit -m "test(plan): all http test stubs, one per category, all xfail"
 
 
 ## Test names: 
@@ -615,50 +681,45 @@ def test_http_after_last_reading_returns_410():
     and no reading; the sequence never starts over"""
     raise NotImplementedError("test not written yet")
 
+- [x] git commit -m "test(plan): all http test stubs, one per category, all xfail"
+
 ---
+
+old to new test names to remember what you learned:
 
 - [x] happy path
     [x] test_get_temperature_returns_200_with_the_reading
-    [ ] test_http_get_temperature_returns_200_with_the_reading
-- [ ] no reading
+    [c] test_http_get_temperature_returns_200_with_the_reading
+- [c] no reading
     - [~] test_get_temperature_returns_503_with_no_reading_yet
-    - [ ] test_http_before_first_reading_returns_503
-        - [ ] 503 Service Unavailable | no reading yet; reply carries Retry-After: 2
-- [ ] bad request
+    - [c] test_http_before_first_reading_returns_503
+        - [c] 503 Service Unavailable | no reading yet; reply carries Retry-After: 2
+- [c] bad request
     - [~] @pytest.mark.parametrize(input, [list of input])?
     - [~] test_get_temperature_returns_error_codes_for_bad_requests
-    - [ ] test_http_bad_request_returns_its_code
-        - [ ] `404 Not Found` | path isn't `/temperature` (or a hint)
-        - [ ] `405 Method Not Allowed` | path exists, method doesn't (`POST /temperature`); reply carries `Allow: GET`
-        - [ ] `400 Bad Request` | the bytes aren't valid HTTP
-        - [ ] `431 Request Header Fields Too Large` | no blank line within 64 KB `501 Not Implemented` | a method the server doesn't recognize at all (`FOO /temperature`)
-- [ ] slow client
+    - [c] test_http_bad_request_returns_its_code
+        - [c] `404 Not Found` | path isn't `/temperature` (or a hint)
+        - [c] `405 Method Not Allowed` | path exists, method doesn't (`POST /temperature`); reply carries `Allow: GET`
+        - [c] `400 Bad Request` | the bytes aren't valid HTTP
+        - [c] `431 Request Header Fields Too Large` | no blank line within 64 KB `501 Not Implemented` | a method the server doesn't recognize at all (`FOO /temperature`)
+- [c] slow client
     - [~] test_answer_temperature_returns_408_on_timeout
-    - [ ] test_http_slow_client_is_disconnected
-        - [ ] `408 Request Timeout` | the client is too slow sending its request; reply carries `Connection: close`, then the server hangs up
-- [ ] access
+    - [c] test_http_slow_client_is_disconnected
+        - [c] `408 Request Timeout` | the client is too slow sending its request; reply carries `Connection: close`, then the server hangs up
+- [c] access
     - [~] test_answer_temperature_returns_403_on_missing_code
-    - [ ] test_http_without_valid_code_returns_403
-        - [ ] `403 Forbidden` | code missing or not on the list
-- [ ] rate
+    - [c] test_http_without_valid_code_returns_403
+        - [c] `403 Forbidden` | code missing or not on the list
+- [c] rate
     - [~] test_answer_temperature_returns_429_rate_limited
-    - [ ] test_http_sixth_request_in_one_second_returns_429
-        - [ ] `429 Too Many Requests` | over 5 per second for this code
-- [ ] end
+    - [c] test_http_sixth_request_in_one_second_returns_429
+        - [c] `429 Too Many Requests` | over 5 per second for this code
+- [c] end
     - [~] test_answer_temperature_returns_410_on_end_of_readings
-    - [ ] test_http_after_last_reading_returns_410
-        - [ ] `410 Gone` | the readings are finished
+    - [c] test_http_after_last_reading_returns_410
+        - [c] `410 Gone` | the readings are finished
 
-
-
-
-
+- [x] learning docs update (PR #2)
+- [x] git pull
 
 ---
-
-
-
-- [ ] then each category: remove xfail -> RED -> GREEN -> refactor
-
-
-- [ ] one test per category, xfail if its behavior is a later roadmap step; commit each category
