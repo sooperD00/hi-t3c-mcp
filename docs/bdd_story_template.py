@@ -1,4 +1,6 @@
 """
+Q1-Q5: the five questions in docs/want-to-done.md
+
 BDD Rules:
 - One `When` per scenario
 - Anything the client did earlier becomes a `Given`
@@ -10,13 +12,12 @@ BDD Rules:
 At automation:
 - A missing step definition errors out with `StepDefinitionNotFoundError`; 
 this is not a real RED. A real RED is an assert failing, or NotImplementedError.
-- The service has to stay up across steps, but each step is a plain function. 
-Your current tests start and stop the event loop inside one asyncio.run. 
-That’s an automation problem, so solve it then, not while you’re formulating.
+- The service has to stay up across steps, but each step is a plain function.
+Solve that here, not while you're formulating.
 
 References:
 - pytest-bdd documentation: https://pytest-bdd.readthedocs.io/en/latest/
-- "Cucumber: Discovery, the first practice of BDD": https://cucumber.io/
+- "Cucumber: Discovery, the first practice of BDD": https://cucumber.io/blog/discovery-the-first-practice-of-bdd/
 - "Test Automation University: the Formulation phase": https://testautomationu.applitools.com/bdd-with-specflow/chapter3.html
 """
 
@@ -25,12 +26,12 @@ from pytest_bdd import scenarios, given, when, then
 
 scenarios("features/<story>.feature")   # one test per Scenario
 
-@given("<Q5 (test) line, word for word>")
+@given("<Q5 (test) line, word for word>", target_fixture="situation")
 def _():
-    raise NotImplementedError   # set it up (arrange)
+    raise NotImplementedError   # set it up (arrange); return what the When needs
 
 @when("<Q2 line, word for word>", target_fixture="reply")
-def _():
+def _(situation):
     raise NotImplementedError   # call it (act); return what the Thens check
 
 @then("<Q3 line, word for word>")
