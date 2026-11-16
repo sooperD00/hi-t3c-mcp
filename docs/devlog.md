@@ -1,67 +1,362 @@
 11/6/26 2:07p
 hi-t3c-mcp 20261106: discovery
+hi-t3c-mcp 20261112: part deux
 
-NEXT TIME:
+---
 
-- [ ] Unhappy paths: no reading yet, unknown path (404), bad request (400)
+REFERENCES:
+- Dan North, BDD: “What’s in a Story?”
+    - "user-stories" and the "Given / When / Then" template
+- Kent Beck, TDD:
+    - "test list": the list of tests you write down before you start
+    - "assert first": Decide what the client should see (Then) and what they do (When). Then ask what has to be true for that to happen (Given).
+        - Writing order (your plan): Who → When → Then → Given
+        - Reading and running order (test code):
+            - Given → When → Then == arrange → act → assert.
+    - "TDD by Example", the refactor step’s main job is removing duplication, and that includes duplicated tests. Sorting before you’ve written anything is a refactor done blind.
+- Seb Rose, BDD
+    - Behaviour-Driven Development is made of three practices; discovery, formulation, automation. **Formulation:** convert the examples that we have gathered in the Discovery phase into a format that is readable to human beings but that can also be parsed and interpreted by code.
+- pytest-bdd, https://pytest-bdd.readthedocs.io/en/latest/
 
-Then each category: remove xfail -> RED -> GREEN -> refactor
+---
 
-RGR for for each test:
+WORKFLOW:
 
-- [x] happy path
-- [ ] no reading
-- [ ] bad request
-- [ ] slow client
-- [ ] access
-- [ ] rate
-- [ ] end
+x want(feat), docs(plan)[, test(plan), test(WIP)], test(RED)[, feat(WIP)], feat(GREEN), chore(refactor), docs(cleanup), docs(learn), repeat
+
+BDD practice    Your step   Output  Commit
+Discovery   the five questions  answers in the devlog   docs(plan)
+Formulation answers → scenarios .feature file   test(plan)
+Automation  step definitions    test_*.py   test(RED)
+
+GREEN and refactor stay the same.
+
+---
+
+BACK BURNER:
+
+- [ ] Unhappy paths: remove xfail -> RED -> GREEN -> refactor
+- [ ] PLAN: /temperature
+
+
+---
+
+11/13/2026 4:38p -- PLAN
+
+WORKFLOW:
+x want(feat), docs(plan)[, test(plan), test(WIP)], test(RED)[, feat(WIP)], feat(GREEN), chore(refactor), docs(cleanup), docs(learn), repeat
+
+"As a client, I want to ask for temperature, so I know if my pet is OK"
+
+PLAN: healthz
+"As a client, I want to reach the server, so that I can ask for the temperature"
+docs(plan): the five questions, the promise, the test name
+1. (`As a ____`) Who does it?
+    - this is who you're gonna pretend to be in the test
+    - [x] the client
+2. (`When ____`) What do they do?
+    - `# call it (act)`
+    - [ ] request GET /healthz
+    - [ ] request GET /temperature
+3. (`Then ____`) What do they see?
+    - `# check it (assert)`
+    - test checks: proof that your setup worked
+    - [ ] the valid http responses:
+```
+HTTP/1.1 200 OK            <- status line: version, code, reason phrase
+Content-Type: text/plain
+Content-Length: 2
+                           <- blank line: headers are done
+UP                         <- body
+```
+```
+HTTP/1.1 200 OK            <- status line: version, code, reason phrase
+Content-Type: text/plain
+Content-Length: <bytes in the reading>
+                           <- blank line: headers are done
+<a valid reading>          <- body
+```
+4. (`Given ____`) What’s true beforehand (the situation the client walks into)?
+    - what *I* the builder either build in GREENm or `# set it up (arrange)` in a test
+    - [ ] the port is wired (code)
+        (code connects port, host, and handler;
+        you've chosen the start_server() arguments)
+    - [ ] the server is listening (the port is turned on) (code)
+    - [ ] /healthz and /temperature have routing (or, routing exists) (code)
+    - [ ] a valid temperature reading is ready for serving (code)
+    - [ ] something can produce valid http response text from inputs like code and body (code)
+    - [ ] main() is running (test)
+5. What must not happen?
+    - `# check it (assert)`
+    - more checks
+    - [ ] no response
+    - [ ] the server, port, or temperature sensor loop stops
+
+
+Check each answer against the roadmap item. ← missing?
+
+test names: `test_<interface>_<situation>_<what the client sees>`
+- from: what's true beforehand
+    - [~] test_http_port_is_wired / test_http_server_is_listening
+    - [ ] test_http_a_client_can_connect
+    """port is wired and server is listening at 8000"
+    - [ ] test_route_temperature_returns_a_valid_reading
+    """the temperature handler alone, with a planted reading -> 200 and that reading"""
+    - [ ] test_route_healthz_returns_200_UP
+    """healthz handler alone, routing has to exist first"""
+    - [ ] test_service_a_valid_reading_exists
+    """start main(), then check latest_temp fills, proves main() starts the loop
+    reads memory instead of going through an interface, which is fine for wiring but
+    isn't a client promise"""
+- from: what do they do and what do they see
+    - [ ] test_request_get_healthz_returns_200_ok
+    - [ ] test_request_get_temperature_returns_200_and_a_valid_reading
+- from: what must not happen
+    - [ ] test_service_remains_on_after_responses_sent
+    """main() is still running after serving
+    catches main() returning early, like forgetting to wait on the server"""
+    - [ ] test_service_remains_on_after_a_bad_request
+    - [ ] test_service_remains_on_after_a_sensor_reading_fails
+    - [ ] test_service_turns_on_and_stays_on_when_run_as_python_service_py
+
+docstrings (promise details):
+code name | condition \ more details
+- [ ] """ 200 | ???
+          a client who requests the server gets a response """
+- [ ] git commit -m "docs(plan): server start and port assignment"
+
+
+RED:
+- [ ] git commit -m "test(RED): "
+
+GREEN:
+- [ ] git commit -m "feat(GREEN): "
+
+REFACTOR:
+- [ ] git commit -m "chore(refactor):"
+- [ ] docs(cleanup)
+- [ ] docs(learn)
+- [ ] repeat ;)
 
 ---
 
 
-11/12/2026 3:02p
+# 11/13/2026 4:38p  -- PLAN -- healthz
 
 WORKFLOW:
-x want(feat), docs(plan), test(plan), test(WIP), test(RED), feat(WIP), feat(GREEN), chore(refactor), docs(cleanup), docs(learn), repeat
+x want(feat), docs(plan)[, test(plan), test(WIP)], test(RED)[, feat(WIP)], feat(GREEN), chore(refactor), docs(cleanup), docs(learn), repeat
 
-want (README.md): roadmap item
+## Bring Forward the User Story:
+"As a (client), I want to (reach the server), so that I can (ask for the temperature)"
+
+## The Five Questions (from the user perspective except for #5)
+Who → When → Then → Given
+1. Who does it? (As a ...) [x] the client
+2. What do they do (When ...) (# call it (act))?
+    - [ ] request GET /healthz
+3. What do they see (Then ...) (# check it (assert))?
+    - [ ] (code) this http response
+    - [ ] (test) check status line and body only (for FastAPI swap later)
+```
+HTTP/1.1 200 OK            <- status line: version, code, reason phrase
+Content-Type: text/plain
+Content-Length: 2
+                           <- blank line: headers are done
+UP                         <- body
+```
+4. What must not happen (Then ...) (# check it (assert))?
+    - [ ] (test) the server stops answering after the first reply
+5. What’s true beforehand (Given ...)
+    (code): what GREEN must build; or (test): # set it up (arrange)
+    - [ ] (code) the port is wired
+        - the code connects port, host, and handler, start_server() arguments
+    - [ ] (code) the server is listening
+        - the port is turned on
+    - [ ] (test) nothing else is listening on PORT
+    - [ ] (code) /healthz routing exists
+        - decision: eventually this will be a routing table
+    - [ ] (code) a function produces valid http response text from e.g. code/body inputs
+        - `_build_reply()` exists but needs its own test(s)
+    - [ ] (test) main() is running
+    - [ ] (code) main() keeps running after it starts
+
+
+- [c] Check each answer against the roadmap item? No. Put this in Refactor
+
+## Write the promise -- one sentence for the whole scenario!?!?!?
+Given → When → Then
+- [ ] "Given that the port is wired, the server is listening, nothing else is listening on PORT, /healthz routing exists, a function produces valid http response text from inputs, main() is running, and main() keeps running after it starts; When a user sends an http request `GET /healthz`, the server sends a valid http response with `200 OK` in the status line and `UP` in the body"
+
+docstrings (promise details):
+code name | condition \ more details
+- [ ] """ 200 | ???
+          a client who requests the server gets a response """
+- [ ] git commit -m "docs(plan): server start and port assignment"
+
+## Write the test name -- just one? really?
+
+test names: `test_<interface>_<situation>_<what the client sees>`
+- from: what's true beforehand
+    - [~] test_http_port_is_wired / test_http_server_is_listening
+    - [ ] test_http_a_client_can_connect
+    """port is wired and server is listening at 8000"
+    - [ ] test_route_temperature_returns_a_valid_reading
+    """the temperature handler alone, with a planted reading -> 200 and that reading"""
+    - [ ] test_route_healthz_returns_200_UP
+    """healthz handler alone, routing has to exist first"""
+    - [ ] test_service_a_valid_reading_exists
+    """start main(), then check latest_temp fills, proves main() starts the loop
+    reads memory instead of going through an interface, which is fine for wiring but
+    isn't a client promise"""
+- from: what do they do and what do they see
+    - [ ] test_request_get_healthz_returns_200_ok
+    - [ ] test_request_get_temperature_returns_200_and_a_valid_reading
+- from: what must not happen
+    - [ ] test_service_remains_on_after_responses_sent
+    """main() is still running after serving
+    catches main() returning early, like forgetting to wait on the server"""
+    - [ ] test_service_remains_on_after_a_bad_request
+    - [ ] test_service_remains_on_after_a_sensor_reading_fails
+    - [ ] test_service_turns_on_and_stays_on_when_run_as_python_service_py
+
+
+RED:
+- [ ] git commit -m "test(RED): "
+
+GREEN:
+- [ ] git commit -m "feat(GREEN): "
+
+REFACTOR:
+- [ ] DRY cleanup
+- [ ] opens
+- [ ] housekeeping / do now
+- [ ] check each answer against the roadmap item
+- [ ] git commit -m "chore(refactor):"
+- [ ] docs(cleanup)
+- [ ] docs(learn)
+- [ ] repeat ;)
+
+no --> this is ridiculous. see Claude.ai reflective conversation: TDD and BDD health check. Conclusion: try TDD + BDD because so many of your items fromt he 5 questions map to BDD named concepts and there is even an existing package / framework for converting those items you just wrote and like into tests. You could just use docstrings and .md files, but the structure might be what you are looking for. Commit here and move forward with pytest-bdd and https://pytest-bdd.readthedocs.io/en/latest/.
+
+Your next step: the 5 questions -> something real test stuff something something is called "Formulation" in that framework. Sounds good to me.
+
+- [x] git commit -m "docs(plan): five questions for GET /healthz, adopt pytest-bdd" \
+  -m "discovery: answered the five questions for one scenario (GET /healthz)" \
+  -m "order: Who -> When -> Then (see, must not) -> Given; the Given is found last (Assert First)" \
+  -m "Given split: (test) is what the test arranges, (code) is what GREEN must build" \
+  -m "dropped: sorting answers against the roadmap; the user story sets scope, overlaps get combined in refactor" \
+  -m "moving on to try pytest-bdd https://pytest-bdd.readthedocs.io/en/latest/" \
+  -m "this maps your items you like to structured test and documentation categories" \
+  -m "dropped: the one-sentence promise; Gherkin puts one condition per line" \
+  -m "docs/template.feature: Gherkin template keyed to the five questions" \
+  -m "next: formulation (.feature file), then automation (step definitions)"
+
+---
+
+
+11/12/2026 3:02p -- WANT
+
+WORKFLOW:
+x want(feat), x docs(plan)[, test(plan), test(WIP)], test(RED)[, feat(WIP)], feat(GREEN), chore(refactor), docs(cleanup), docs(learn), repeat
+
+WANT:
+README.md roadmap item
 - [x] `main()`: start the sensor loop and the server on port 8000
-
-user-story: what can someone do after this that they can’t do now?
-`As a ___, I want ___, so that ___`
-- [x] "As a client, I want the service to be up, so that I can reach it"
-
-why (in product terms)
-- [x] so that I can reach it?
-
+user-story/why (in product terms): `As a ___, I want ___, so that ___`
+- [x] "As a client, I want to reach the server, so that I can ask for the temperature"
+- [x] "As a client, I want to ask for temperature, so I know if my pet is OK"
 commit:
-- [ ] git commit -m "want(feat): start the service and reach it"
+- [x] git commit -m "want(feat): start the service and reach it"
 
-WORKFLOW: 
-Step    Where   What comes out
-want(kind)    devlog  the why, in product terms
-docs(plan)    devlog  the five questions, the promise, the test name
-test(plan)  code    the stubs, committed
+PLAN: healthz
+"As a client, I want to reach the server, so that I can ask for the temperature"
+docs(plan): the five questions, the promise, the test name
+1. (`As a ____`) Who does it?
+    - this is who you're gonna pretend to be in the test
+    - [x] the client
+2. (`When ____`) What do they do?
+    - `# call it (act)`
+    - [ ] request GET /healthz
+    - [ ] request GET /temperature
+3. (`Then ____`) What do they see?
+    - `# check it (assert)`
+    - test checks: proof that your setup worked
+    - [ ] the valid http responses:
+```
+HTTP/1.1 200 OK            <- status line: version, code, reason phrase
+Content-Type: text/plain
+Content-Length: 2
+                           <- blank line: headers are done
+UP                         <- body
+```
+```
+HTTP/1.1 200 OK            <- status line: version, code, reason phrase
+Content-Type: text/plain
+Content-Length: <bytes in the reading>
+                           <- blank line: headers are done
+<a valid reading>          <- body
+```
+4. (`Given ____`) What’s true beforehand (the situation the client walks into)?
+    - what *I* the builder either build in GREENm or `# set it up (arrange)` in a test
+    - [-] the port is wired (code)
+        (code connects port, host, and handler;
+        you've chosen the start_server() arguments)
+    - [-] the server is listening (the port is turned on) (code)
+    - [-] /healthz and /temperature have routing (or, routing exists) (code)
+    - [-] a valid temperature reading is ready for serving (code)
+    - [-] something can produce valid http response text from inputs like code and body (code)
+    - [-] main() is running (test)
+5. What must not happen?
+    - `# check it (assert)`
+    - more checks
+    - [-] no response
+    - [-] the server, port, or temperature sensor loop stops
 
-plan feature
-   -> write a test that says it, and watch it fail      (red)
-   -> write just enough code to pass                    (green)
-   -> clean up while it stays green                     (refactor)
-   -> next feature
 
-Step    For main()
-want    “I want to start the service and reach it”
-red the smoke test fails, because main() raises NotImplementedError
-green   write main(): start the sensor loop, start the server
-refactor    tidy, and make python service.py call it
+Check each answer against the roadmap item. ← missing?
 
-claude.ai conversation started compacting -> move to a new one
-hi-t3c-mcp 20261106: discovery
+test names: `test_<interface>_<situation>_<what the client sees>`
+- from: what's true beforehand
+    - [~] test_http_port_is_wired / test_http_server_is_listening
+    - [-] test_http_a_client_can_connect
+    """port is wired and server is listening at 8000"
+    - [-] test_route_temperature_returns_a_valid_reading
+    """the temperature handler alone, with a planted reading -> 200 and that reading"""
+    - [-] test_route_healthz_returns_200_UP
+    """healthz handler alone, routing has to exist first"""
+    - [-] test_service_a_valid_reading_exists
+    """start main(), then check latest_temp fills, proves main() starts the loop
+    reads memory instead of going through an interface, which is fine for wiring but
+    isn't a client promise"""
+- from: what do they do and what do they see
+    - [-] test_request_get_healthz_returns_200_ok
+    - [-] test_request_get_temperature_returns_200_and_a_valid_reading
+- from: what must not happen
+    - [-] test_service_remains_on_after_responses_sent
+    """main() is still running after serving
+    catches main() returning early, like forgetting to wait on the server"""
+    - [-] test_service_remains_on_after_a_bad_request
+    - [-] test_service_remains_on_after_a_sensor_reading_fails
+    - [-] test_service_turns_on_and_stays_on_when_run_as_python_service_py
 
-new chat:
-hi-t3c-mcp 20261112: part deux
+docstrings (promise details):
+code name | condition \ more details
+- [-] """ 200 | ???
+          a client who requests the server gets a response """
+- [-] git commit -m "docs(plan): server start and port assignment"
 
+
+RED:
+- [-] git commit -m "test(RED): "
+
+GREEN:
+- [-] git commit -m "feat(GREEN): "
+
+REFACTOR:
+- [-] git commit -m "chore(refactor):"
+- [-] docs(cleanup)
+- [-] docs(learn)
+- [-] repeat ;)
 
 
 ---
@@ -632,7 +927,11 @@ What must not happen?
     - [~] get a reading, stay connected
     - [x] stay connected (the main promise)
 
-promise: a client that doesn't finish its request within the read timeout gets hung up on, with a 408 first
+test name:
+
+promise (docstring): a client that doesn't finish its request within the read timeout gets hung up on, with a 408 first
+
+
 
 Try again:
 > rate
@@ -723,3 +1022,9 @@ old to new test names to remember what you learned:
 - [x] git pull
 
 ---
+
+claude.ai conversation started compacting -> move to a new one
+hi-t3c-mcp 20261106: discovery
+
+new chat:
+hi-t3c-mcp 20261112: part deux
