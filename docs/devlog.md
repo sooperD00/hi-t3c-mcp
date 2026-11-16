@@ -17,6 +17,8 @@ REFERENCES:
 - Seb Rose, BDD
     - Behaviour-Driven Development is made of three practices; discovery, formulation, automation. **Formulation:** convert the examples that we have gathered in the Discovery phase into a format that is readable to human beings but that can also be parsed and interpreted by code.
 - pytest-bdd, https://pytest-bdd.readthedocs.io/en/latest/
+- Growing Object-Oriented Software, Guided by Tests by Freeman and Pryce, 2009
+    - **double-loop TDD** -- the outer loop is the scenario, which fails until the whole want works. The inner loop is RGR on each small piece.
 
 ---
 
@@ -93,38 +95,9 @@ Content-Length: <bytes in the reading>
     - [ ] the server, port, or temperature sensor loop stops
 
 
-Check each answer against the roadmap item. ← missing?
+---
 
-test names: `test_<interface>_<situation>_<what the client sees>`
-- from: what's true beforehand
-    - [~] test_http_port_is_wired / test_http_server_is_listening
-    - [ ] test_http_a_client_can_connect
-    """port is wired and server is listening at 8000"
-    - [ ] test_route_temperature_returns_a_valid_reading
-    """the temperature handler alone, with a planted reading -> 200 and that reading"""
-    - [ ] test_route_healthz_returns_200_UP
-    """healthz handler alone, routing has to exist first"""
-    - [ ] test_service_a_valid_reading_exists
-    """start main(), then check latest_temp fills, proves main() starts the loop
-    reads memory instead of going through an interface, which is fine for wiring but
-    isn't a client promise"""
-- from: what do they do and what do they see
-    - [ ] test_request_get_healthz_returns_200_ok
-    - [ ] test_request_get_temperature_returns_200_and_a_valid_reading
-- from: what must not happen
-    - [ ] test_service_remains_on_after_responses_sent
-    """main() is still running after serving
-    catches main() returning early, like forgetting to wait on the server"""
-    - [ ] test_service_remains_on_after_a_bad_request
-    - [ ] test_service_remains_on_after_a_sensor_reading_fails
-    - [ ] test_service_turns_on_and_stays_on_when_run_as_python_service_py
-
-docstrings (promise details):
-code name | condition \ more details
-- [ ] """ 200 | ???
-          a client who requests the server gets a response """
-- [ ] git commit -m "docs(plan): server start and port assignment"
-
+# RGR -- healthz
 
 RED:
 - [ ] git commit -m "test(RED): "
@@ -133,6 +106,10 @@ GREEN:
 - [ ] git commit -m "feat(GREEN): "
 
 REFACTOR:
+- [ ] DRY cleanup
+- [ ] opens
+- [ ] housekeeping / do now
+- [ ] check each answer against the roadmap item
 - [ ] git commit -m "chore(refactor):"
 - [ ] docs(cleanup)
 - [ ] docs(learn)
@@ -140,14 +117,17 @@ REFACTOR:
 
 ---
 
-
-# 11/13/2026 4:38p  -- PLAN -- healthz
+# 11/16/2026 1:50p -- BDD -- healthz
 
 WORKFLOW:
 x want(feat), docs(plan)[, test(plan), test(WIP)], test(RED)[, feat(WIP)], feat(GREEN), chore(refactor), docs(cleanup), docs(learn), repeat
 
 ## Bring Forward the User Story:
 "As a (client), I want to (reach the server), so that I can (ask for the temperature)"
+
+## feature nametag
+
+healthz (so you can grep *not* the entire user story)
 
 ## The Five Questions (from the user perspective except for #5)
 Who → When → Then → Given
@@ -181,60 +161,137 @@ UP                         <- body
     - [ ] (code) main() keeps running after it starts
 
 
+
+# 11/16/2026 2:47p -- BDD "double-loop TDD" documentation -- healthz
+
+- [ ] Claude.ai "Gherkin name origin" PR#???
+
+---
+
+# 11/16/2026 1:50p -- BDD setup -- healthz
+
+## Formulation
+- [x] this is how typing the who/when/then/given results -> next step
+- [x] pytest-bdd docs: read x Example, x Scenarios shortcut, x Step arguments, x Override fixtures via given steps, Backgrounds
+- [x] grok `target_fixture`: when a `@given` step uses `target_fixture="name"`, the return value of that function becomes a Pytest fixture named `name`
+    - see Claude.ai *"Gherkin name origin"*
+    - **Fixture**: a value pytest hands a function, matched by parameter name
+    - `target_fixture`: turns a step’s return value into a fixture for the rest of that scenario
+    - **Scope**: one scenario; the next scenario starts with an empty table
+
+.feature files
+- [x] docs/template.feature
+VS Code
+- [x] Ctrl+Shift+X  # search "Cucumber", install the one by CucumberOpen
+    - top result "Cucumber"
+- [x] restart; open any .feature file  # colors appear
+Sublime
+- [x] Ctrl+Shift+P → "Package Control: Install Package" → "Cucumber"
+- [x] open a .feature file → View → Syntax → Open all with current extension as → Cucumber → Gherkin
+
+bdd templates
+- [x] template.feature
+- [x] docs/test_bdd_story_template.py
+
+- [x] git commit -m "docs(plan): pytest_bdd templates"
+
+
+---
+
+# 11/13/2026 4:38p  -- PLAN -- healthz
+
+WORKFLOW:
+x want(feat), docs(plan)[, test(plan), test(WIP)], test(RED)[, feat(WIP)], feat(GREEN), chore(refactor), docs(cleanup), docs(learn), repeat
+
+## Bring Forward the User Story:
+"As a (client), I want to (reach the server), so that I can (ask for the temperature)"
+
+## The Five Questions (from the user perspective except for #5)
+Who → When → Then → Given
+1. Who does it? (As a ...) [x] the client
+2. What do they do (When ...) (# call it (act))?
+    - [-] request GET /healthz
+3. What do they see (Then ...) (# check it (assert))?
+    - [-] (code) this http response
+    - [-] (test) check status line and body only (for FastAPI swap later)
+```
+HTTP/1.1 200 OK            <- status line: version, code, reason phrase
+Content-Type: text/plain
+Content-Length: 2
+                           <- blank line: headers are done
+UP                         <- body
+```
+4. What must not happen (Then ...) (# check it (assert))?
+    - [-] (test) the server stops answering after the first reply
+5. What’s true beforehand (Given ...)
+    (code): what GREEN must build; or (test): # set it up (arrange)
+    - [-] (code) the port is wired
+        - the code connects port, host, and handler, start_server() arguments
+    - [-] (code) the server is listening
+        - the port is turned on
+    - [-] (test) nothing else is listening on PORT
+    - [-] (code) /healthz routing exists
+        - decision: eventually this will be a routing table
+    - [-] (code) a function produces valid http response text from e.g. code/body inputs
+        - `_build_reply()` exists but needs its own test(s)
+    - [-] (test) main() is running
+    - [-] (code) main() keeps running after it starts
+
+
 - [c] Check each answer against the roadmap item? No. Put this in Refactor
 
 ## Write the promise -- one sentence for the whole scenario!?!?!?
 Given → When → Then
-- [ ] "Given that the port is wired, the server is listening, nothing else is listening on PORT, /healthz routing exists, a function produces valid http response text from inputs, main() is running, and main() keeps running after it starts; When a user sends an http request `GET /healthz`, the server sends a valid http response with `200 OK` in the status line and `UP` in the body"
+- [-] "Given that the port is wired, the server is listening, nothing else is listening on PORT, /healthz routing exists, a function produces valid http response text from inputs, main() is running, and main() keeps running after it starts; When a user sends an http request `GET /healthz`, the server sends a valid http response with `200 OK` in the status line and `UP` in the body"
 
 docstrings (promise details):
 code name | condition \ more details
-- [ ] """ 200 | ???
+- [-] """ 200 | ???
           a client who requests the server gets a response """
-- [ ] git commit -m "docs(plan): server start and port assignment"
+- [-] git commit -m "docs(plan): server start and port assignment"
 
 ## Write the test name -- just one? really?
 
 test names: `test_<interface>_<situation>_<what the client sees>`
 - from: what's true beforehand
     - [~] test_http_port_is_wired / test_http_server_is_listening
-    - [ ] test_http_a_client_can_connect
+    - [-] test_http_a_client_can_connect
     """port is wired and server is listening at 8000"
-    - [ ] test_route_temperature_returns_a_valid_reading
+    - [-] test_route_temperature_returns_a_valid_reading
     """the temperature handler alone, with a planted reading -> 200 and that reading"""
-    - [ ] test_route_healthz_returns_200_UP
+    - [-] test_route_healthz_returns_200_UP
     """healthz handler alone, routing has to exist first"""
-    - [ ] test_service_a_valid_reading_exists
+    - [-] test_service_a_valid_reading_exists
     """start main(), then check latest_temp fills, proves main() starts the loop
     reads memory instead of going through an interface, which is fine for wiring but
     isn't a client promise"""
 - from: what do they do and what do they see
-    - [ ] test_request_get_healthz_returns_200_ok
-    - [ ] test_request_get_temperature_returns_200_and_a_valid_reading
+    - [-] test_request_get_healthz_returns_200_ok
+    - [-] test_request_get_temperature_returns_200_and_a_valid_reading
 - from: what must not happen
-    - [ ] test_service_remains_on_after_responses_sent
+    - [-] test_service_remains_on_after_responses_sent
     """main() is still running after serving
     catches main() returning early, like forgetting to wait on the server"""
-    - [ ] test_service_remains_on_after_a_bad_request
-    - [ ] test_service_remains_on_after_a_sensor_reading_fails
-    - [ ] test_service_turns_on_and_stays_on_when_run_as_python_service_py
+    - [-] test_service_remains_on_after_a_bad_request
+    - [-] test_service_remains_on_after_a_sensor_reading_fails
+    - [-] test_service_turns_on_and_stays_on_when_run_as_python_service_py
 
 
 RED:
-- [ ] git commit -m "test(RED): "
+- [-] git commit -m "test(RED): "
 
 GREEN:
-- [ ] git commit -m "feat(GREEN): "
+- [-] git commit -m "feat(GREEN): "
 
 REFACTOR:
-- [ ] DRY cleanup
-- [ ] opens
-- [ ] housekeeping / do now
-- [ ] check each answer against the roadmap item
-- [ ] git commit -m "chore(refactor):"
-- [ ] docs(cleanup)
-- [ ] docs(learn)
-- [ ] repeat ;)
+- [-] DRY cleanup
+- [-] opens
+- [-] housekeeping / do now
+- [-] check each answer against the roadmap item
+- [-] git commit -m "chore(refactor):"
+- [-] docs(cleanup)
+- [-] docs(learn)
+- [-] repeat ;)
 
 no --> this is ridiculous. see Claude.ai reflective conversation: TDD and BDD health check. Conclusion: try TDD + BDD because so many of your items fromt he 5 questions map to BDD named concepts and there is even an existing package / framework for converting those items you just wrote and like into tests. You could just use docstrings and .md files, but the structure might be what you are looking for. Commit here and move forward with pytest-bdd and https://pytest-bdd.readthedocs.io/en/latest/.
 
@@ -276,12 +333,12 @@ docs(plan): the five questions, the promise, the test name
     - [x] the client
 2. (`When ____`) What do they do?
     - `# call it (act)`
-    - [ ] request GET /healthz
-    - [ ] request GET /temperature
+    - [-] request GET /healthz
+    - [-] request GET /temperature
 3. (`Then ____`) What do they see?
     - `# check it (assert)`
     - test checks: proof that your setup worked
-    - [ ] the valid http responses:
+    - [-] the valid http responses:
 ```
 HTTP/1.1 200 OK            <- status line: version, code, reason phrase
 Content-Type: text/plain

@@ -275,6 +275,40 @@ def test_http_bad_request_returns_its_status_code(situation):
 - Parametrizing over a dict runs once per key, and pytest names each run by the key.
 - `ids=` takes a function for richer labels: `[404 Not Found (unknown path)]`.
 
+# pytest-bdd
+
+## A fixture is matched by parameter name
+
+pytest keeps a table per test: fixture name → value. A function that has a parameter named `blog` gets whatever is stored under `"blog"`.
+
+## `target_fixture` hands one step's result to the steps after it
+
+Each Gherkin line runs as its own function, with no shared variables. `target_fixture` stores the step's return value in that table, under the name you give it.
+
+```python
+@given(parsers.parse('a blog named "{name}"'), target_fixture="blog")
+def make_blog(name):
+	return Blog(name=name)
+
+@then("the blog has 1 article")
+def check(blog):              # same object the Given returned
+	assert len(blog.articles) == 1
+```
+
+It lasts one scenario. Without `target_fixture`, a step's return value is thrown away.
+
+## `.feature` files
+
+VS Code
+- [ ] Ctrl+Shift+X  # search "Cucumber", install the one by **Cucumber**
+    (publisher ID `CucumberOpen`)
+- [ ] open any .feature file  # colors appear
+
+Sublime
+- [ ] Ctrl+Shift+P → "Package Control: Install Package" → "Cucumber"
+- [ ] open a .feature file → View → Syntax → Open all with current extension as → Cucumber → Gherkin
+
+
 # Naming
 
 ## A leading underscore means "internal to this file"
