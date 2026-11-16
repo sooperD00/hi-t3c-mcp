@@ -36,7 +36,10 @@ hi-t3c-mcp/
     |-- design.PNG          # system diagram
     |-- interface-spec.md   # functions, state, HTTP in/out
     |-- scaffold-method.md  # diagram -> scaffold, any project
+    |-- want-to-done.md
     |-- test-first-method.md
+    |-- template.feature
+    |-- bdd_story_template.py
     |-- devlog.md           # working log
     |-- stack-notes-python.md
     `-- stack-notes-git.md
