@@ -1,4 +1,5 @@
 # features/<story>.feature
+# Q1-Q5: the five questions in docs/want-to-done.md
 Feature: <the want, in a few words>
   As a <Q1>
   I want <...>

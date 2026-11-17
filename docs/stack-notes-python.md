@@ -275,6 +275,10 @@ def test_http_bad_request_returns_its_status_code(situation):
 - Parametrizing over a dict runs once per key, and pytest names each run by the key.
 - `ids=` takes a function for richer labels: `[404 Not Found (unknown path)]`.
 
+## pytest collects every `test_*.py`, even in `docs/`
+
+A template named `test_bdd_story_template.py` got collected, and `pytest` stopped with `Interrupted: 1 error during collection`. Name templates so they match neither `test_*.py` nor `*_test.py`.
+
 # pytest-bdd
 
 ## A fixture is matched by parameter name

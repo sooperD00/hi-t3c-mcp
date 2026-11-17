@@ -30,7 +30,7 @@ For now the sensor answers at `/temperature`. When access codes land, it moves t
 ## Stack
 
 - **Python 3.13** with `asyncio`: one thread and one event loop shared by the sensor loop and the HTTP server
-- **pytest**, test-first
+- **pytest**, test-first, with **pytest-bdd** for the scenarios
 - **Railway** for hosting
 - Planned: **FastAPI + uvicorn**, then **FastMCP**
 
@@ -46,7 +46,10 @@ hi-t3c-mcp/
     |-- design.PNG            # system diagram
     |-- interface-spec.md     # functions, state, HTTP formats
     |-- scaffold-method.md    # diagram -> code scaffold
-    |-- test-first-method.md  # red, green, refactor
+    |-- want-to-done.md       # want -> scenario -> done (outer loop)
+    |-- test-first-method.md  # red, green, refactor (inner loop)
+    |-- template.feature      # scenario template
+    |-- bdd_story_template.py # step-definition template
     |-- devlog.md             # working log
     |-- stack-notes-python.md # Python, asyncio, pytest gotchas
     `-- stack-notes-git.md    # git gotchas
