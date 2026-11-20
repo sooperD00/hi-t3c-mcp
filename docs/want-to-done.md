@@ -8,15 +8,15 @@ A method for any project: start from something a client wants, end with code tha
 ## The commit cycle
 
 ```
-want(feat), docs(plan)[, test(plan), test(WIP)], test(RED)[, feat(WIP)], feat(GREEN), chore(refactor), docs(cleanup), docs(learn), repeat
+want(feat)[, docs(plan)], form(WIP), form(plan)[, test(WIP)], test(RED)[, feat(WIP)], feat(GREEN), chore(refactor), docs(cleanup), docs(learn), repeat
 ```
 
-Brackets mark optional commits. Three of the steps are BDD's three practices:
+Brackets mark optional commits. `docs(plan)` is only for when the method itself changes. Three of the steps are BDD's three practices:
 
 | BDD practice | Step | Output | Commit |
 |---|---|---|---|
-| Discovery | the five questions | answers in the devlog | `docs(plan)` |
-| Formulation | answers → scenarios | `.feature` file | `test(plan)` |
+| Discovery | user story + the five questions | answers in the devlog | `want(feat)` |
+| Formulation | answers → scenarios | `.feature` file | `form(WIP)`, `form(plan)` |
 | Automation | step definitions | `test_*.py` | `test(RED)` |
 
 GREEN and refactor stay the same.
@@ -64,6 +64,7 @@ Copy [template.feature](template.feature) to `features/<story>.feature`.
 - **Anything the client did earlier becomes a `Given`,** in past tense.
 - **One condition per line.**
 - **Comments go on their own line.** A `#` after a step becomes part of the step's text, and no step definition matches it.
+- Commit your draft as `form(WIP)` and the reviewed version as `form(plan)`. The diff between them shows what got corrected, which feeds `docs(learn)`.
 
 ### Name the scenario
 

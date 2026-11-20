@@ -117,26 +117,42 @@ REFACTOR:
 
 ---
 
+# 11/20/2026 1:48p -- BDD -- healthz
+Claude.ai: 
+
+
+
+---
+
 # 11/16/2026 1:50p -- BDD -- healthz
+Claude.ai: Gherkin name origin
+Claude.ai: TDD plan for hi-t3c-mpc main()
 
 WORKFLOW:
-x want(feat), docs(plan)[, test(plan), test(WIP)], test(RED)[, feat(WIP)], feat(GREEN), chore(refactor), docs(cleanup), docs(learn), repeat
+x want(feat): this is feature discovery in BDD # devlog
+[x docs(plan) -- general planning, e.g. this time it was documenting the BDD method]
+x form(WIP) / form(plan): formulation in BDD -> .feature file
+? test(WIP) / test(RED): if you are writing plain tests, no BDD
+? feat(WIP) / feat(GREEN)
+? chore(refactor): DRY and other code stuff; then 
+? docs(cleanup): sometimes things change after you do the work
+? docs(learn): the WIP -> done diff, plus any questions and realizations
 
 ## Bring Forward the User Story:
-"As a (client), I want to (reach the server), so that I can (ask for the temperature)"
+"As a (client), I want to (reach the server), so that I can (know it's up)"
 
 ## feature nametag
 
-healthz (so you can grep *not* the entire user story)
+- [c] healthz -> features/healthz.feature, starting with docs/template.feature
 
 ## The Five Questions (from the user perspective except for #5)
 Who → When → Then → Given
 1. Who does it? (As a ...) [x] the client
 2. What do they do (When ...) (# call it (act))?
-    - [ ] request GET /healthz
+    - [c] request GET /healthz
 3. What do they see (Then ...) (# check it (assert))?
     - [ ] (code) this http response
-    - [ ] (test) check status line and body only (for FastAPI swap later)
+    - [c] (test) check status line and body only (for FastAPI swap later)
 ```
 HTTP/1.1 200 OK            <- status line: version, code, reason phrase
 Content-Type: text/plain
@@ -145,26 +161,28 @@ Content-Length: 2
 UP                         <- body
 ```
 4. What must not happen (Then ...) (# check it (assert))?
-    - [ ] (test) the server stops answering after the first reply
+    - [c] (test) the server stops answering after the first reply
 5. What’s true beforehand (Given ...)
     (code): what GREEN must build; or (test): # set it up (arrange)
+    - [c] (test) main() is running
+    - [c] (test) nothing else is listening on PORT
     - [ ] (code) the port is wired
         - the code connects port, host, and handler, start_server() arguments
     - [ ] (code) the server is listening
         - the port is turned on
-    - [ ] (test) nothing else is listening on PORT
     - [ ] (code) /healthz routing exists
         - decision: eventually this will be a routing table
     - [ ] (code) a function produces valid http response text from e.g. code/body inputs
         - `_build_reply()` exists but needs its own test(s)
-    - [ ] (test) main() is running
     - [ ] (code) main() keeps running after it starts
 
+- [x] git commit -m "form(WIP): healthz .feature; BDD workflow refinement"
 
+---
 
 # 11/16/2026 2:47p -- BDD "double-loop TDD" documentation -- healthz
 
-- [ ] Claude.ai "Gherkin name origin" PR#???
+- [x] Claude.ai "Gherkin name origin" PR#3
 
 ---
 
