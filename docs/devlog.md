@@ -138,15 +138,25 @@ x form(WIP) / form(plan): formulation in BDD -> .feature file
 Claude.ai: hi-t3c-mcp-20261120: features/healthz.feature review
 
 
-**User Story**: Connextra template
-"As a tarantula keeper, I want to reach the server, So that I know my tarantula's monitor is still running"
-
+**User Story**
+"As a tarantula keeper, I want to reach the server, So that I know the service watching my tarantula is still running"
 
 > p: Don't look in memory or past chats. Read LINK_BDD_DOCS, LINK_GHERKIN_DOCS, and READING_LIST and review features/FILENAME.feature line by line with me. Check against the official docs and my own documentation and let's discuss options, misses, and reasonings, then make a decision before we move forward with running the tests using pytest_bdd.
 
 ```gherkin
 *Keyword*: *name* (alt: *title*)
-    *description*
+    *description* (freeform lines)
+    *Step keyword* *step text*
+
+*The Scene|context*: Given
+*The Event*: When
+*Expected Outcome|Outcome|Result": Then
+quotes: on a parameter
+
+*Background*: shared Givens # refactor steps
+*Rule*: group scenarios under one business rule
+*Tags (@name): test grouping
+*Step arguments*: parametrize your gherkin
 ```
 1. `Feature: healthz endpoint`
     - ? heathz, healthz endpoint, Heath check, Know the server is up
@@ -183,7 +193,7 @@ Claude.ai: hi-t3c-mcp-20261120: features/healthz.feature review
 
     Let's implement each rung. !They aren't separate secenarios! all 5 share the same Givens and the same When: the service is running, and the client sends GET /healthz. Only the checks differ --> these are Then lines!!
 
-    - decide: claude withdraws "the why repeats the what". 
+    - decision: claude withdraws "the why repeats the what". 
     - but now, Shorter, plain words, and the hobby’s own word for the role:
     ```gherkin
     Feature: healthz endpoint
@@ -193,8 +203,39 @@ Claude.ai: hi-t3c-mcp-20261120: features/healthz.feature review
     ```
     - [x] git commit -m "form(plan): Feature description -- healthz" \
             -m "x Feature title, x description, scenario(s), ???"
-
-
+3. `Scenario: GET /healthz`
+    - when -> `Scenario:`
+        ```gherkin
+        # examples: https://pytest-bdd.readthedocs.io/en/latest/
+        Scenario: Publishing the article
+        Scenario: I'm the author
+        Scenario: I'm the admin
+        Scenario: Arguments for given, when, then
+        Scenario: Test given fixture injection
+        Scenario: Deleting the article
+        Scenario: Creating a new user with roles and permissions
+        Scenario: Step with docstrings
+        Scenario: Successful login
+        Scenario: Symbolic name across steps
+        Scenario: Publishing an article
+        Scenario: Wilson posts to his own blog
+        Scenario: Greg posts to a client's blog
+        Scenario: All steps are declared in the conftest
+        Scenario: Wallet EUR amount stays constant
+        Scenario: Second wallet JPY amount stays constant
+        ```
+    - decision: -> don't put a result in a scenario
+    - `I ping the server`: no, ping is ICMP, below level 1 rung (not even HTTP) the computer OS answers a ping, so Python program could be not running, crashed, whatever and you'd get "yes" for the ping. the P in HTTP and ICMP are both protocols, and ICMP ping doesn't tell you your tarantula monitor program is running.
+    - `check [tarantula] monitor|service is [still] running`:
+        - Gherkin says: try hard to come up with examples that don’t make assumptions about technology or user interface. GET /healthz is technology; “the monitor is running” isn’t
+        - Dan North: the scenario title is the problem domain (the what), and the steps are the solution domain (the how). So the title says “check the monitor,” and the When line says GET /healthz
+        - GET /healthz, Check the monitor is running, Check the tarantula monitor is running, Check the service is running, Check the monitor is still running
+    - decide: two scenarios, and keep "service" from design.md and because the user is literally requesting and receiving a service, analogous to receiving one from a human in everyday parlance
+        1. `Scenario: Check the service is running`
+        2. `Scenario: Check the service is still running`
+        - [x] also, update the story and feature: `So that I know the service watching my tarantula is still running`
+    - [x] git commit -m "form(plan): Feature scenario(s) -- healthz" \
+            -m "x Feature title, x description, x scenario(s) title(s), scenario_1 given when then, scenario_2 given when then, ????"
 
 
 - [ ] git commit -m "form(plan): healthz .feature"
