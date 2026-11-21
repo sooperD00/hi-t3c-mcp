@@ -1,9 +1,9 @@
 # features/healthz.feature
 # Q1-Q5: the five questions in docs/want-to-done.md
 Feature: healthz endpoint
-  As a client
+  As a tarantula keeper
   I want to reach the server
-  So that I can know it's up
+  So that I know my tarantula's monitor is still running
 
   # one Scenario per When; the title becomes the test name
   # title: situation first, what the client sees last

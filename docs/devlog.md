@@ -7,6 +7,8 @@ hi-t3c-mcp 20261112: part deux
 REFERENCES:
 - Dan North, BDD: “What’s in a Story?”
     - "user-stories" and the "Given / When / Then" template
+    - Connextra template: "As a ..., I want to ..., so that I can ..."
+        - a business analyst helps a stakeholder frame it as a story narrative
 - Kent Beck, TDD:
     - "test list": the list of tests you write down before you start
     - "assert first": Decide what the client should see (Then) and what they do (When). Then ask what has to be true for that to happen (Given).
@@ -135,12 +137,17 @@ x form(WIP) / form(plan): formulation in BDD -> .feature file
 # 11/20/2026 1:48p -- BDD -- features/healthz.feature
 Claude.ai: hi-t3c-mcp-20261120: features/healthz.feature review
 
-x "As a (client), I want to (reach the server), so that I can (know it's up)"
--> "As a tarantula keeper, I want to reach the server, So that I know my tarantula's monitor is still running"
+
+**User Story**: Connextra template
+"As a tarantula keeper, I want to reach the server, So that I know my tarantula's monitor is still running"
 
 
 > p: Don't look in memory or past chats. Read LINK_BDD_DOCS, LINK_GHERKIN_DOCS, and READING_LIST and review features/FILENAME.feature line by line with me. Check against the official docs and my own documentation and let's discuss options, misses, and reasonings, then make a decision before we move forward with running the tests using pytest_bdd.
 
+```gherkin
+*Keyword*: *name* (alt: *title*)
+    *description*
+```
 1. `Feature: healthz endpoint`
     - ? heathz, healthz endpoint, Heath check, Know the server is up
     - decision: keep `healthz endpoint`
@@ -148,7 +155,44 @@ x "As a (client), I want to (reach the server), so that I can (know it's up)"
     - [ ] add the template's "the want" wording to project docs
     - [x] git commit -m "form(plan): Feature title -- healthz" \
             -m "Feature title, user story, ???"
+2. `As a client` /\ `I want to reach the server` /\ `So that I can know it's up`
+    - `Feature` description content = **User Story** or **Narrative**
+    - objection: “know it’s up” is what you get the moment you “reach the server,”
+    - what does "up" mean in words to a user? naively to me, it just means "on", and many behaviors can indicate that the server is "on". I might even have it send "Hello World" or "hello" or "up", which is not a valid http message -- would it send?
 
+    Claude tries it out:
+    - a tiny server that writes the bare bytes UP and hangs up, then three different clients asking it. -> yes, it sends!
+    - A socket carries whatever bytes you hand it, and the server never checks whether they’re HTTP. What happens next depends on the client:
+    - curl’s message has a history behind it. The very first HTTP, 0.9 from 1991, had no status line and no headers: the server sent the document and hung up. So a bare UP is HTTP/0.9-shaped. Modern clients refuse it by default, and your raw-socket test doesn’t care either way
+
+    Client  What it did with a bare UP
+    1) Raw socket (the way test_service.py reads): `b'UP'`, accepted without complaint
+    2) curl: `Received HTTP/0.9 when not allowed`, exit code 1
+    3) Python http.client (the layer under requests and urllib): `BadStatusLine UP`
+
+    -> don't treat "the status line is correct" as proof that "it's an HTTP response".
+    > that's obvious only if you already know HTTP. Here's rungs for experiment:
+
+    rungs:
+    Rung    What the client sees: What you’d have built so far
+    1) connection refused: nothing listening on PORT
+    2) some bytes come back (`UP`): a server that writes and hangs up
+    3) a valid HTTP response: status line, headers, blank line
+    4) `HTTP/1.1 200 OK`: the right status
+    5) body `UP`: the right body
+
+    Let's implement each rung. !They aren't separate secenarios! all 5 share the same Givens and the same When: the service is running, and the client sends GET /healthz. Only the checks differ --> these are Then lines!!
+
+    - decide: claude withdraws "the why repeats the what". 
+    - but now, Shorter, plain words, and the hobby’s own word for the role:
+    ```gherkin
+    Feature: healthz endpoint
+      As a tarantula keeper
+      I want to reach the server
+      So that I know my tarantula's monitor is still running
+    ```
+    - [x] git commit -m "form(plan): Feature description -- healthz" \
+            -m "x Feature title, x description, scenario(s), ???"
 
 
 
