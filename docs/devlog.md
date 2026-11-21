@@ -19,6 +19,9 @@ REFERENCES:
 - pytest-bdd, https://pytest-bdd.readthedocs.io/en/latest/
 - Growing Object-Oriented Software, Guided by Tests by Freeman and Pryce, 2009
     - **double-loop TDD** -- the outer loop is the scenario, which fails until the whole want works. The inner loop is RGR on each small piece.
+- Gherkin Reference
+    - https://docs.reqnroll.net/latest/gherkin/gherkin-reference.html
+- Not sure I like this one yet but putting it here: Chris Matts suggested that “hunting the value” was the first step, and flipped the template to put the benefit first: `“In order to <receive benefit> as a <role>, I can <goal/desire>”.` https://www.gov.uk/service-manual/agile-delivery/writing-user-stories
 
 ---
 
@@ -117,10 +120,40 @@ REFACTOR:
 
 ---
 
-# 11/20/2026 1:48p -- BDD -- healthz
-Claude.ai: 
+WORKFLOW:
+x want(feat): this is feature discovery in BDD # devlog
+[x docs(plan) -- general planning, e.g. this time it was documenting the BDD method]
+x form(WIP) / form(plan): formulation in BDD -> .feature file
+? test(WIP) / test(RED): if you are writing plain tests, no BDD
+? feat(WIP) / feat(GREEN)
+? chore(refactor): DRY and other code stuff; then 
+? docs(cleanup): sometimes things change after you do the work
+? docs(learn): the WIP -> done diff, plus any questions and realizations
+
+---
+
+# 11/20/2026 1:48p -- BDD -- features/healthz.feature
+Claude.ai: hi-t3c-mcp-20261120: features/healthz.feature review
+
+x "As a (client), I want to (reach the server), so that I can (know it's up)"
+-> "As a tarantula keeper, I want to reach the server, So that I know my tarantula's monitor is still running"
 
 
+> p: Don't look in memory or past chats. Read LINK_BDD_DOCS, LINK_GHERKIN_DOCS, and READING_LIST and review features/FILENAME.feature line by line with me. Check against the official docs and my own documentation and let's discuss options, misses, and reasonings, then make a decision before we move forward with running the tests using pytest_bdd.
+
+1. `Feature: healthz endpoint`
+    - ? heathz, healthz endpoint, Heath check, Know the server is up
+    - decision: keep `healthz endpoint`
+        - BDD docs examples mostly name a thing (Blog, Login)
+    - [ ] add the template's "the want" wording to project docs
+    - [x] git commit -m "form(plan): Feature title -- healthz" \
+            -m "Feature title, user story, ???"
+
+
+
+
+
+- [ ] git commit -m "form(plan): healthz .feature"
 
 ---
 
@@ -151,7 +184,7 @@ Who → When → Then → Given
 2. What do they do (When ...) (# call it (act))?
     - [c] request GET /healthz
 3. What do they see (Then ...) (# check it (assert))?
-    - [ ] (code) this http response
+    - [-] (code) this http response
     - [c] (test) check status line and body only (for FastAPI swap later)
 ```
 HTTP/1.1 200 OK            <- status line: version, code, reason phrase
@@ -166,15 +199,15 @@ UP                         <- body
     (code): what GREEN must build; or (test): # set it up (arrange)
     - [c] (test) main() is running
     - [c] (test) nothing else is listening on PORT
-    - [ ] (code) the port is wired
+    - [-] (code) the port is wired
         - the code connects port, host, and handler, start_server() arguments
-    - [ ] (code) the server is listening
+    - [-] (code) the server is listening
         - the port is turned on
-    - [ ] (code) /healthz routing exists
+    - [-] (code) /healthz routing exists
         - decision: eventually this will be a routing table
-    - [ ] (code) a function produces valid http response text from e.g. code/body inputs
+    - [-] (code) a function produces valid http response text from e.g. code/body inputs
         - `_build_reply()` exists but needs its own test(s)
-    - [ ] (code) main() keeps running after it starts
+    - [-] (code) main() keeps running after it starts
 
 - [x] git commit -m "form(WIP): healthz .feature; BDD workflow refinement"
 
